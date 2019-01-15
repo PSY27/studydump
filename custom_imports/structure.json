@@ -1,0 +1,173 @@
+{
+	"Years": {
+		"1": {
+			"Branches": {
+				"Physics": {
+					"Subjects": [
+						"BE",
+						"BME",
+						"MOS",
+						"Physics",
+						"English",
+						"Physics Lab",
+						"Workshop"
+					]
+				},
+				"Chemistry": {
+					"Subjects": [
+						"PSUC",
+						"Chemistry",
+						"Biology",
+						"BET",
+						"EVS",
+						"Chemistry Lab",
+						"PSUC Lab"
+					]
+				},
+				"Common": {
+					"Subjects": [
+						"EG",
+						"Mathematics I",
+						"Mathematics II"
+					]
+				}
+			}
+		},
+		"2": {
+			"Branches": {
+				"Aeronautical and Automobile": {
+					"Subjects": [
+						"Aircraft Structures",
+						"APT",
+						"AE",
+						"Thermodynamics",
+						"Fluid Mechanics",
+						"Fluid Mechanics Lab",
+						"Aerodynamics",
+						"Flight Mechanics",
+						"Aircraft Propulsion",
+						"LCT",
+						"Production Lab",
+						"Aerodynamics and Propulsion Lab",
+						"Numerical Computational Lab"
+					]
+				},
+				"Chemical": {
+					"Subjects": [
+						"CPC",
+						"Momentum Transfer",
+						"Mechanical Operations",
+						"Chemical Thermodynamics I",
+						"Chemical Thermodynamics II",
+						"Organic Chemistry",
+						"Heat Transfer Operations",
+						"Mass Transfer I",
+						"Physical Chemistry",
+						"Chemical Engg. Drawing",
+						"MT/MO Lab",
+						"Physical Chemistry Lab",
+						"Organic Chemisty Lab"
+					]
+				},
+				"EEE": {
+					"Subjects": [
+						"ECA",
+						"DEC",
+						"EM I",
+						"EM II",
+						"Electromagnetic Theory",
+						"AEC",
+						"Signals and Systems",
+						"DSD",
+						"ASD",
+						"EM Lab I",
+						"EC Lab",
+						"IE Lab I",
+						"IE Lab II"
+					]
+				},
+				"CSE": {
+					"Subjects": [
+						"COD"
+					]
+				},
+				"IT": {
+					"Subjects": [
+						"DSM",
+						"DS",
+						"OOP",
+						"PDC",
+						"DBS",
+						"COMP",
+						"CN",
+						"SE"
+					]
+				},
+				"Common": {
+					"Subjects": [
+						"Mathematics III",
+						"Mathematics IV"
+					]
+				}
+			},
+			"OE": {}
+		},
+		"3": {
+			"Branches": {
+				"CSE": {
+					"Subjects": [
+						"COD",
+						"Mathematics"
+					]
+				},
+				"IT": {
+					"Subjects": [
+						"DSM",
+						"DS",
+						"OOP",
+						"PDC",
+						"Mathematics"
+					]
+				}
+			}
+		},
+		"4": {
+			"Branches": {
+				"CSE": {
+					"Subjects": [
+						"COD",
+						"Mathematics"
+					]
+				},
+				"IT": {
+					"Subjects": [
+						"DSM",
+						"DS",
+						"OOP",
+						"PDC",
+						"Mathematics"
+					]
+				}
+			}
+		},
+		"Common": {
+			"Branches": {
+				"CSE": {
+					"Subjects": [
+						"COD",
+						"Mathematics"
+					]
+				},
+				"IT": {
+					"Subjects": [
+						"DSM",
+						"DS",
+						"OOP",
+						"PDC",
+						"Mathematics"
+					]
+				}
+			}
+		}
+	}
+}
