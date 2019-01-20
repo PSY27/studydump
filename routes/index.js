@@ -577,9 +577,11 @@
 
 /* Download File Route */
 	router.get('/download', function(req, res) {
-		if(true) {
+		
+		if(verifyToken(req.get('Authorization').split(' ')[1])) {
 			var file = Buffer.from(req.query.fURL, 'base64').toString('ascii');
 			console.log(getFileName(file));
+			
 			res.download(file, getFileName(file), function(err) {
 				if(err) {
 					console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
