@@ -7,12 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 -   Duplication/spam - OCR???
--	Thumbnail - add downloadURL parameter to return json of list uploads
 -	Notifications
+
+### Changed
+-	Concrete error catching system with throwbacks
+-	Defaulting values check
+-	Fix user entered whitespace
 
 ###	Optional
 -	favicon
 -	faculty account
+
+
+## [0.5.1] - 2017-01-20
+### Added
+-	Full thumbnail support
+
+### Changed
+-	Upserted the timestamp collection
+-	Use get requests for listUploads
+-	Fixed call/download count
+
+### Removed
+
 
 ## [0.5.0] - 2017-01-15
 ### Added
@@ -34,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -	Fixed call/download count
 
 ### Removed
+
 
 <!---
 [Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD

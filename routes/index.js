@@ -8,6 +8,8 @@
 	var fs = require('fs');
 	var jwt = require('jsonwebtoken');
 	var multer  =   require('multer');
+	var gm = require('gm').subClass({ imageMagick: true });
+	var filepreview = require('filepreview-es6');
 	var storage = multer.diskStorage({
 		destination: (req, file, cb) => {
 			cb(null, storageURL)
@@ -23,17 +25,22 @@
 
 /* Custom Variables */
 	var storageURL = 'public/images/uploads';
-	var structURL = require('../custom_imports/structure.json');
+	var structURL = require(path.resolve('custom_imports/structure.json'));
+	var thumbURL = 'public/images/thumbs';
+	var staticThumbURL = 'public/images/thumbs/static';
 	var MongoURL = 'mongodb://localhost:27017/study_dump';
+	
 	var infoDB = 'info';
 	var timestampDB = 'timestamp';
-	var privateKEY  = fs.readFileSync('./JWTKeys/private.key', 'utf8');
-	var publicKEY  = fs.readFileSync('./JWTKeys/public.key', 'utf8');
-	var Options = require('../custom_imports/Options');
-	var thumbURL = 'public/images/thumbs';
 	var logDB = 'act_log';
+	
+	var privateKEY  = fs.readFileSync(path.resolve('JWTKeys/private.key'), 'utf8');
+	var publicKEY  = fs.readFileSync(path.resolve('JWTKeys/public.key'), 'utf8');
+	
+	var Options = require(path.resolve('custom_imports/Options'));
 
 
+	
 /* Functions */
 	// Recursive Dictionary Key Call
 		var getKey = function(currkey, callback) {
@@ -70,7 +77,6 @@
 						console.log('\x1b[32m', 'Success :: Token authorized', '\n\r\x1b[0m');
 					}
 					else {
-						console.log(decoded);
 						throw err;
 					}
 				});
@@ -88,7 +94,7 @@
 		var addLog = function(action, desc, callback) {
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					return;
 				}
 				else {
@@ -100,7 +106,7 @@
 								
 					logger.insert(feed, function(err, result) {
 						if(err) {
-							console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
 						}
 						else {
 							console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
@@ -109,6 +115,111 @@
 				}
 			});
 		}
+
+
+
+	// Creating thumbnails
+		var assignThumb = (file, done) => {
+			let inFile = storageURL + '/' + file.filename;
+			let thumbName = file.filename.substring(0, file.filename.indexOf('.'));
+			let thumbLoc = thumbURL + '/' + thumbName + '_thumb.jpg';
+			
+			return filepreview.generateAsync(inFile, thumbLoc, Options.thumbOptions)
+			.then( (response) => {
+				console.log('\x1b[36m', 'Info :: Response recieved\n', response, '\n\r\x1b[0m');
+				if(response.thumbnail == 'undefined') {
+					console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
+					let statThumb = staticThumbURL + '/' + path.extname(inFile).toLowerCase().replace('.', '') +'.png';
+					try {
+						if (fs.existsSync(statThumb)) {
+							return {thumbnail: statThumb};
+						}
+						else {
+							return {thumbnail: staticThumbURL + '/common.png'};
+						}
+					}
+					catch(err) {
+						console.error(err)
+					}
+				}
+				else {
+					return response;
+				}
+			})
+			.catch( error => {
+				console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', error, '\n\r\x1b[0m');
+				console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
+				let statThumb = staticThumbURL + '/' + path.extname(inFile).toLowerCase().replace('.', '') +'.png';
+				try {
+					if (fs.existsSync(statThumb)) {
+						return {thumbnail: statThumb};
+					}
+					else {
+						console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
+						return {thumbnail: staticThumbURL + '/common.png'};
+					}
+				}
+				catch(err) {
+					console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', err, '\n\r\x1b[0m');
+				}
+			});
+		}
+		
+		
+/*------------------------------------------------ Thumbnail Procedure Kernel---------------------------------------------------<PLZ PRESERVE>------------------------------------------------------------------------
+	// Creating thumbnails
+		var assignThumb = function(file) {
+			var catagory = file.mimetype.split('/')[0];
+			var thumbName = file.filename.substring(0, file.filename.indexOf('.')) + '_thumb.jpg';	//append _thumb to filename
+			if(catagory == 'image') {
+				try {
+					gm(storageURL+'/'+file.filename)
+						.resize("100^", "100^")
+						.gravity('Center')
+						.crop(100, 100)
+						.write(thumbURL+'/'+thumbName, (err) => {
+							if (err) {
+								throw err;
+							}
+							else {
+								console.log('\x1b[32m', 'Success :: Created thumbnail', '\n\r\x1b[0m');
+							}
+						});
+						return (thumbURL+'/'+thumbName);
+				}
+				catch (err) {
+					console.log('\x1b[31m', 'Error :: Couldn\'t create thumbnail\n', err, '\n\r\x1b[0m');
+					return err;
+				}
+			}
+			else if(catagory == 'video') {
+				try {
+					var proc = new ffmpeg({source: storageURL+'/'+file.filename})
+						.on('end', function() {
+							console.log('\x1b[32m', 'Success :: Created thumbnail', '\n\r\x1b[0m');
+						})
+						.on('error', function(err) {
+							throw err;
+						})
+						.takeScreenshots({ count: 1, timemarks: [ '5' ], filename: '%b_thumb.jpg' }, thumbURL);
+				}
+				catch (err) {
+					console.log('\x1b[31m', 'Error :: Couldn\'t create thumbnail\n', err, '\n\r\x1b[0m');
+					return err;
+				}
+				return (thumbURL+'/'+thumbName);
+			}
+			else if(catagory == 'text') {
+				
+			}
+			else if(catagory == 'application') {															//seee individually
+				
+			}
+			else {																									//chemical,x-conference												//assign corresponding thumbnail from thumbnailArchive
+				
+			}
+		}
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
 
@@ -155,7 +266,7 @@
 		if(verifyToken(req.get('Authorization').split(' ')[1])) {
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
@@ -165,7 +276,7 @@
 						
 					upload(req, res, function(err) {
 						if(err) {
-							console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
 						}
 						if(!req.file) {
@@ -175,14 +286,14 @@
 						else {
 							info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
 								if (err) {
-									console.log('\x1b[31m', 'Error :: Collection couldn\'t be read', err, '\n\r\x1b[0m');
+									console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 									res.status(500).send(err);
 								}
 								else if (result.length) {
-									console.log('\x1b[33m', 'Warning :: Duplicate document found\n\r\x1b[0m');
+									console.log('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
 									 fs.unlink(storageURL+'/'+req.file.filename, function (err) {
 										if (err) {
-											console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file', err, '\n\r\x1b[0m');
+											console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file\n', err, '\n\r\x1b[0m');
 											res.status(500).send(err);
 										}
 										else {
@@ -192,50 +303,45 @@
 									});
 								}
 								else {
-										
 									
-									
-									
-									//Do thumbnails bitch...
-									
-									
-									
-									
-									
-									var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif, DownloadURL: storageURL+'/'+req.file.filename, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
-								
-									info.insertOne(feed, function(err, result) {
-										if(err) {
-											console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
-											res.status(500).send(err);
-										}
-										else {
-											console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-											
-											addLog('File uploaded', result.ops[0]._id.toString());
-											
-											timec = Date.now();
-											
-											var year = 'Year.'+((req.body.year)?req.body.year:'common');
-											var branch = 'Branch.'+((req.body.branch)?req.body.branch:'common');
-											var subject = 'Subject.'+((req.body.subject)?req.body.subject:'common');
-											
-											var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-											if((req.body.notif) == 'true') {
-												timefeed['Notif'] = timec;
+									assignThumb(req.file).then(function(thumbObj) {
+										console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+
+										var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif, DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
+
+										info.insertOne(feed, function(err, result) {
+											if(err) {
+												console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+												res.status(500).send(err);
 											}
-											
-											timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
-												if(err) {
-													console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
-													res.status(500).send(err);
+											else {
+												console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
+												
+												addLog('File uploaded', result.ops[0]._id.toString());
+												
+												timec = Date.now();
+												
+												var year = 'Year.'+((req.body.year)?req.body.year:'common');
+												var branch = 'Branch.'+((req.body.branch)?req.body.branch:'common');
+												var subject = 'Subject.'+((req.body.subject)?req.body.subject:'common');
+												
+												var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
+												if((req.body.notif) == 'true') {
+													timefeed['Notif'] = timec;
 												}
-												else {
-													console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-													res.status(200).send("OK");
-												}
-											});
-										}
+												
+												timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+													if(err) {
+														console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+														res.status(500).send(err);
+													}
+													else {
+														console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+														res.status(200).send("OK");
+													}
+												});
+											}
+										});
 									});
 								}
 							});
@@ -258,7 +364,7 @@
 		if(verifyToken(req.get('Authorization').split(' ')[1])) {
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
@@ -268,7 +374,7 @@
 						
 					bulk(req, res, function(err) {
 						if(err) {
-							console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
 						}
 						if(!req.files) {
@@ -277,17 +383,16 @@
 						}
 						else {
 							req.files.forEach(function(doc) {
-								console.log(doc);
 								info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
 									if (err) {
-										console.log('\x1b[31m', 'Error :: Collection couldn\'t be read', err, '\n\r\x1b[0m');
+										console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 										if(!res.headersSent) res.status(500).send(err);
 									}
 									else if (result.length) {
 										console.log('\x1b[33m', 'Warning :: Duplicate document found\n\r\x1b[0m');
 										 fs.unlink(storageURL+'/'+doc.filename, function (err) {
 											if (err) {
-												console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file', err, '\n\r\x1b[0m');
+												console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file\n', err, '\n\r\x1b[0m');
 												if(!res.headersSent) res.status(500).send(err);
 											}
 											else {
@@ -297,50 +402,45 @@
 										});
 									}
 									else {
+
+										assignThumb(doc).then(function(thumbObj) {
+											console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+
+											var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif, DownloadURL: storageURL+'/'+doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
 										
-									
-									
-									
-									//Do thumbnails bitch...
-									
-									
-									
-									
-									
-										var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif, DownloadURL: storageURL+'/'+doc.filename, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
-									
-										info.insertOne(feed, function(err, result) {
-											if(err) {
-												console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
-												if(!res.headersSent) res.status(500).send(err);
-											}
-											else {
-												console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-												
-												addLog('File uploaded', result.ops[0]._id.toString());
-												
-												timec = Date.now();
-												
-												var year = 'Year.'+((req.body.year)?req.body.year:'common');
-												var branch = 'Branch.'+((req.body.branch)?req.body.branch:'common');
-												var subject = 'Subject.'+((req.body.subject)?req.body.subject:'common');
-												
-												var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-												if((req.body.notif) == 'true') {
-													timefeed['Notif'] = timec;
+											info.insertOne(feed, function(err, result) {
+												if(err) {
+													console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+													if(!res.headersSent) res.status(500).send(err);
 												}
-												
-												timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
-													if(err) {
-														console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
-														if(!res.headersSent) res.status(500).send(err);
+												else {
+													console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
+													
+													addLog('File uploaded', result.ops[0]._id.toString());
+													
+													timec = Date.now();
+													
+													var year = 'Year.'+((req.body.year)?req.body.year:'common');
+													var branch = 'Branch.'+((req.body.branch)?req.body.branch:'common');
+													var subject = 'Subject.'+((req.body.subject)?req.body.subject:'common');
+													
+													var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
+													if((req.body.notif) == 'true') {
+														timefeed['Notif'] = timec;
 													}
-													else {
-														console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-														if(!res.headersSent) res.status(200).send("OK");
-													}
-												});
-											}
+													
+													timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+														if(err) {
+															console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+															if(!res.headersSent) res.status(500).send(err);
+														}
+														else {
+															console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+															if(!res.headersSent) res.status(200).send("OK");
+														}
+													});
+												}
+											});
 										});
 									}
 								});
@@ -384,7 +484,7 @@
 		
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
@@ -398,20 +498,20 @@
 					
 					query.toArray(function (err, result) {
 						if (err) {
-							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
 						}
 						else if (result.length) {
 							query.forEach(function(doc) {
 								info.update({_id:doc._id}, { $inc: { "Counts.CallCount": 1} }, function(err) {
 									if(err) {
-										console.log('\x1b[31m', 'Error :: Query couldn\'t be executed', err, '\n\r\x1b[0m');
+										console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
 										if(!res.headersSent) res.status(500).send('Query couldn\'t be executed');
 									}
 									else {
 										console.log('\x1b[36m', 'Info :: Call count updated', '\n\r\x1b[0m');
 										console.log('\x1b[36m', 'Info :: Sending documents', '\n\r\x1b[0m');
-										res.status(200).send(result);
+										if(!res.headersSent) res.status(200).send(result);
 									}
 								});
 							});
@@ -438,7 +538,7 @@
 		if(verifyToken(req.get('Authorization').split(' ')[1])) {
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
@@ -453,7 +553,7 @@
 					else {
 						info.update({'_id':new mongodb.ObjectID(req.body.id)}, {$inc: {"Counts.LikeCount":1}}, function(err, result) {
 							if(err) {
-								console.log('\x1b[31m', 'Error :: Can\'t insert into database', err, '\n\r\x1b[0m');
+								console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
 								res.status(500).send(err);
 							}
 							else {
@@ -482,13 +582,13 @@
 			console.log(getFileName(file));
 			res.download(file, getFileName(file), function(err) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
 					MongoClient.connect(MongoURL, function(err, db) {
 						if(err) {
-							console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 							if(!res.headersSent) res.status(500).send(err);
 						}
 						else {
@@ -499,7 +599,7 @@
 							var info = db.collection(infoDB);
 							info.update({DownloadURL: file}, { $inc: { "Counts.DownloadCount": 1} }, function(err) {
 								if(err) {
-									console.log('\x1b[31m', 'Error :: Query couldn\'t be executed', err, '\n\r\x1b[0m');
+									console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
 									if(!res.headersSent) res.status(500).send(err);
 								}
 								else {
@@ -546,7 +646,7 @@
 		
 			MongoClient.connect(MongoURL, function(err, db) {
 				if(err) {
-					console.log('\x1b[31m', 'Error :: Can\'t connect to database', err, '\n\r\x1b[0m');
+					console.log('\x1b[31m', 'Error :: Can\'t connect to database\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
 				else {
@@ -557,7 +657,7 @@
 					var timestamp = db.collection(timestampDB);
 					timestamp.find({}, feed).toArray(function (err, result) {
 						if (err) {
-							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read', err, '\n\r\x1b[0m');
+							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
 						}
 						else {
