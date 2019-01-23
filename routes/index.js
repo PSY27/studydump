@@ -212,7 +212,7 @@
 			else if(catagory == 'text') {
 				
 			}
-			else if(catagory == 'application') {															//seee individually
+			else if(catagory == 'application') {															//see individually
 				
 			}
 			else {																									//chemical,x-conference												//assign corresponding thumbnail from thumbnailArchive
@@ -227,8 +227,8 @@
 	router.post('/getToken', function(req, res, next) {
 		if(true) {																																			//AUTH ONLY FOR HIGH ACCESS
 			var payload = {
-				name: req.body.name,
-				email: req.body.email
+				name: req.body.name.replace(/[|&;$%@"<>()+,]/g, ""),
+				email: req.body.email.replace(/[|&;$%@"<>()+,]/g, "")
 			};
 
 			var token = jwt.sign(payload, privateKEY, Options.signOptions);
@@ -284,7 +284,7 @@
 							res.status(500).send('No file was sent');
 						}
 						else {
-							info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
+							info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year.substring(0,1):'common', Branch: (req.body.branch)?req.body.branch.toLowerCase():'common', Subject: (req.body.subject)?req.body.subject.toLowerCase():'common'}, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
 								if (err) {
 									console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 									res.status(500).send(err);
@@ -307,7 +307,7 @@
 									assignThumb(req.file).then(function(thumbObj) {
 										console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
-										var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year:'common', Branch: (req.body.branch)?req.body.branch:'common', Subject: (req.body.subject)?req.body.subject:'common'}, IsNotif: req.body.notif, DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
+										var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: (req.body.year)?req.body.year.substring(0,1):'common', Branch: (req.body.branch)?req.body.branch.toLowerCase():'common', Subject: (req.body.subject)?req.body.subject.toLowerCase():'common'}, IsNotif: req.body.notif.toLowerCase(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
 
 										info.insertOne(feed, function(err, result) {
 											if(err) {
@@ -321,9 +321,9 @@
 												
 												timec = Date.now();
 												
-												var year = 'Year.'+((req.body.year)?req.body.year:'common');
-												var branch = 'Branch.'+((req.body.branch)?req.body.branch:'common');
-												var subject = 'Subject.'+((req.body.subject)?req.body.subject:'common');
+												var year = 'Year.'+((req.body.year)?req.body.year.substring(0,1):'common');
+												var branch = 'Branch.'+((req.body.branch)?req.body.branch.toLowerCase():'common');
+												var subject = 'Subject.'+((req.body.subject)?req.body.subject.toLowerCase():'common');
 												
 												var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
 												if((req.body.notif) == 'true') {
@@ -338,6 +338,7 @@
 													else {
 														console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
 														res.status(200).send("OK");
+														db.close();
 													}
 												});
 											}
@@ -631,13 +632,13 @@
 		if(verifyToken(req.get('Authorization').split(' ')[1])) {
 			feed['_id']=0;
 			if(req.query.year) {
-				feed['Year.'+req.query.year] = 1;
+				feed['Year.'+req.query.year.substring(0,1)] = 1;
 			}
 			else if(req.query.branch) {
-				feed['Branch.'+req.query.branch] = 1;
+				feed['Branch.'+req.query.branch.toLowerCase()] = 1;
 			}
 			else if(req.query.subject) {
-				feed['Subject.'+req.query.subject] = 1;
+				feed['Subject.'+req.query.subject.toLowerCase()] = 1;
 			}
 			else if(req.query.notif) {
 				feed['Notif'] = 1;
@@ -662,9 +663,13 @@
 							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
 						}
-						else {
+						else if (result.length) {
 							console.log('\x1b[36m', 'Info :: Sent timestamp', '\n\r\x1b[0m');
 							res.status(200).send(getKey(result[0]).toString());
+						}
+						else {
+							console.log('\x1b[36m', 'Info :: Not a field for timestamp', '\n\r\x1b[0m');
+							if(!res.headersSent) res.status(400).send('Invalid return field');
 						}
 					});
 				}
