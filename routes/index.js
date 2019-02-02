@@ -552,7 +552,7 @@
 						res.status(500).send("Invalid ObjectId");
 					}
 					else {
-						info.update({'_id':new mongodb.ObjectID(req.body.id)}, {$inc: {"Counts.LikeCount":1}}, function(err, result) {
+						info.update({'_id':new mongodb.ObjectID(req.body.id)}, {$inc: {"Counts.LikeCount":(req.body.dislike=="true")?-1:1}}, function(err, result) {
 							if(err) {
 								console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
 								res.status(500).send(err);

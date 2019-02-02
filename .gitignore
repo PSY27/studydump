@@ -1,0 +1,5 @@
+# exclude data
+data/*
+
+# except gitkeep to actually commit the folder
+!data/.gitkeep 

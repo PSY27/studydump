@@ -12,14 +12,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 -	Concrete error catching system with throwbacks
 -	Defaulting values check
--	Fix user entered whitespace
 
 ###	Optional
 -	favicon
 -	faculty account
 
 
-## [0.5.1] - 2017-01-20
+## [0.6.0] - 2019-01-20
+### Added
+-	Added dislike functionality
+-	Concrete sanitisation and consistency of user queries
+-	Discrete callovers for various isolated functions
+-	Clearance of motive in function calls
+-	Additional comments for server requirements
+-	Modded filepreview-es6 for suitable function
+
+### Changed
+-	Fixed filesystem error catching
+-	Using connection pooling mechanism instead of re-establishing network scenarios
+-	Fixed timestamp updation for routines
+-	Console logs now more verbose
+
+### Removed
+-	Inclusion of system-wide global variables
+
+
+## [0.5.1] - 2019-01-20
 ### Added
 -	Full thumbnail support
 -	Authorization for download route
@@ -32,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 
-## [0.5.0] - 2017-01-15
+## [0.5.0] - 2019-01-15
 ### Added
 -	Pagination
 -	Concrete http return codes
