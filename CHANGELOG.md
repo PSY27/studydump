@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -	faculty account
 
 
-## [0.6.0] - 2019-01-20
+## [0.6.0] - 2019-02-02
 ### Added
 -	Added dislike functionality
 -	Concrete sanitisation and consistency of user queries

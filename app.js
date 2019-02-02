@@ -1,4 +1,4 @@
-/* Import Declarations */
+/* Import Requires */
 	const createError = require('http-errors');
 	const express = require('express');
 	const path = require('path');
@@ -7,6 +7,18 @@
 	const logger = require('morgan');
 	const bodyParser = require('body-parser');
 	const mongo = require('mongodb');
+	const MongoClient = mongo.MongoClient;
+	
+	
+	
+/* Server Variables */
+	const MongoURL = 'mongodb://localhost:27017/study_dump';
+	
+	
+	
+/* Export Variables */
+	var port = 9696;
+	
 
 
 
@@ -43,8 +55,17 @@
 /* App Routing */
 	app.use('/', (process.env.NODE_ENV) == 'development' ? debugRouter : indexRouter);
 	app.use('/users', usersRouter);
-
 	
+	
+	
+	MongoClient.connect(MongoURL, function(err, db) {
+		if (err) {
+			console.log(`Failed to connect to the database. ${err.stack}`);
+		}
+		app.set('db', db);
+		app.listen(port);
+		console.log(`Node.js app is listening at http://localhost:${port}`);
+	});
 	
 /* catch 404 and forward to error handler */
 	app.use(function(req, res, next) {

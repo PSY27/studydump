@@ -11,4 +11,4 @@ public/images/thumbs/*
 data/*
 
 # except gitkeep to actually commit the folder
-!data/.gitkeep 
+!data/.gitkeep
