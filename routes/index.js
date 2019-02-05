@@ -323,7 +323,7 @@
 					console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
-				if(!req.file) {
+				else if(!req.file) {
 					console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
 					res.status(500).send('No file was sent');
 				}
@@ -412,7 +412,7 @@
 					console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
-				if(!req.files) {
+				else if(!req.files) {
 					console.log('\x1b[31m', 'Error :: No files provided', '\n\r\x1b[0m');
 					res.status(500).send('No file was sent');
 				}
