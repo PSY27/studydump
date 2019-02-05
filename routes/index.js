@@ -18,8 +18,8 @@
 			cb(null, (file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix() + '-' + Date.now() + file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)));
 		}
 	});
-	var upload = multer({ storage : storage }).single('uploadFile');
-	var bulk = multer({ storage : storage }).array('bulkUpload',50);
+	var upload = multer({ storage : storage, limits : {fileSize : 1024*1024*1000}}).single('uploadFile');
+	var bulk = multer({ storage : storage, limits : {fileSize : 1024*1024*1000}}).array('bulkUpload',50);
 
 
 

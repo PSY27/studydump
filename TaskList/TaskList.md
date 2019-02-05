@@ -14,6 +14,7 @@ Tasklist to remember during later stages of development
 -	Blacklist IPs trying multiple times to create jwt
 -	Use modded filepreview middleware
 -	Security and stress check
--	Server support for GraphicsMagick	//images
--	Server support for ghostscript			//pdfs
--	Server support for ffmpeg				//videos
+-	Server support for GraphicsMagick				//images
+-	Server support for ghostscript						//pdfs
+-	Server support for ffmpeg							//videos
+-	Server support for unoconv/libreoffice			//pdf
