@@ -18,8 +18,8 @@
 			cb(null, (file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix() + '-' + Date.now() + file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)));
 		}
 	});
-	var upload = multer({ storage : storage }).single('uploadFile');
-	var bulk = multer({ storage : storage }).array('bulkUpload',50);
+	var upload = multer({ storage : storage, limits : {fileSize : 1024*1024*1000}}).single('uploadFile');
+	var bulk = multer({ storage : storage, limits : {fileSize : 1024*1024*1000}}).array('bulkUpload',50);
 
 
 
@@ -82,7 +82,7 @@
 
 	// User input integrity check function group
 		String.prototype.sanitise = function(rep='') {															// Sanitises string (Illegal characters replaced by replacement safe character)
-			return this.replace(/[|&;$%@"<>()+,]/g, rep).toString();
+			return this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
 		}
 		
 		String.prototype.toNum = function() {																		// Removes every character that isn't numerical
@@ -307,8 +307,45 @@
 		}
 	});
 
-	
-	
+
+
+/* Search Document Route */
+	router.get('/search', function(req, res){
+		
+		var info = req.app.get('db').collection(infoDB);
+		var logger = req.app.get('db').collection(logDB);
+		
+		var queryArray = req.query.s.split(',');
+		
+		var sanitisedArray = queryArray.map(function (e) { return e.sanitise() })
+		
+		var regex = sanitisedArray.map(function (e) { return new RegExp('.*'+e+'.*', "i"); });
+		
+		if(verifyToken(req.get('Authorization'))) {
+				
+			info.find({ $or: [ {FileName: {$in: regex}}, {FileType: {$in: regex}}, {Filters: {Year: {$in: regex}}}, {Filters: {Branch: {$in: regex}}}, {Filters: {Subject: {$in: regex}}} ]}).toArray(function (err, result) {																											//duplicate check
+				if (err) {
+					console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
+					res.status(500).send(err);
+				}
+				else if (result.length) {
+					console.log('\x1b[33m', 'Info :: Found search result', '\n\r\x1b[0m');
+					res.status(200).send(result);
+				}
+				else {
+					console.log('\x1b[33m', 'Info :: No results found', '\n\r\x1b[0m');
+					res.status(200).send('No upload found');
+				}
+			});
+		}
+		else {
+			console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+			res.status(401).send('Couldn\'t authenticate connection');		
+		}
+	});
+
+
+
 /* Upload File Route */
 	router.post('/uploadFile', function(req, res){
 		
@@ -323,7 +360,7 @@
 					console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
-				if(!req.file) {
+				else if(!req.file) {
 					console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
 					res.status(500).send('No file was sent');
 				}
@@ -412,7 +449,7 @@
 					console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
-				if(!req.files) {
+				else if(!req.files) {
 					console.log('\x1b[31m', 'Error :: No files provided', '\n\r\x1b[0m');
 					res.status(500).send('No file was sent');
 				}

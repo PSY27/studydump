@@ -990,6 +990,46 @@
 				"description": "Must pass base64 encoded path from listUploads call"
 			},
 			"response": []
+		},
+		{
+			"name": "Search function",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZm9vIiwiZW1haWwiOiJiYXJiYXouY29tIiwiaWF0IjoxNTQ5NDkwMjE4LCJleHAiOjE1NDk1MzM0MTgsImF1ZCI6Ik1JVCIsImlzcyI6IlJlZ2V4In0.EWeXseROI1mBvYKFwiA4nQbmbdtTcmalICIhDV4foCdWgK3zsd4_5ILhcviubxeRhu783vy6ZxB9rzXgrU_kjA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:3000/search?s=ko,0-,K*",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "s",
+							"value": "ko,0-,K*",
+							"description": "pass array of search keyword values as param1,param2,param3"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
