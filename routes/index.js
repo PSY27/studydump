@@ -546,7 +546,7 @@
 				feed.FileType = req.query.type.sanitise().stringFix().replace('.','');
 			}
 			if(req.query.notif) {
-				feed.IsNotif = (req.query.notif.sanitise().stringFix() == true)?'true':'false';
+				feed.IsNotif = (req.query.notif.sanitise().stringFix() == 'true')?'true':'false';
 			}
 			if(!req.query.available) {
 				feed.isAvailable = true;
