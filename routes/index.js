@@ -365,7 +365,7 @@
 					res.status(500).send('No file was sent');
 				}
 				else {
-					info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year,'common').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
+					info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
 						if (err) {
 							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
@@ -387,7 +387,7 @@
 							assignThumb(req.file).then(function(thumbObj) {
 								console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 							
-								var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year,'common').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
+								var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
 
 								info.insertOne(feed, function(err, result) {
 									if(err) {
@@ -401,7 +401,7 @@
 										
 										timec = Date.now();
 										
-										var year = 'Year.'+checkReturn(req.body.year,'common').sanitise().toNum();
+										var year = 'Year.'+checkReturn(req.body.year, '0').sanitise().toNum();
 										var branch = 'Branch.'+checkReturn(req.body.branch,'common').sanitise().stringFix();
 										var subject = 'Subject.'+checkReturn(req.body.subject,'common').sanitise().stringFix();
 										
@@ -455,7 +455,7 @@
 				}
 				else {
 					req.files.forEach(function(doc) {
-						info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year,'common').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
+						info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
 							if (err) {
 								console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 								if(!res.headersSent) res.status(500).send(err);
@@ -478,7 +478,7 @@
 								assignThumb(doc).then(function(thumbObj) {
 									console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 								
-									var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year,'common').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};						
+									var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};						
 
 									info.insertOne(feed, function(err, result) {
 										if(err) {
@@ -492,7 +492,7 @@
 											
 											timec = Date.now();
 
-											var year = 'Year.'+checkReturn(req.body.year,'common').sanitise().toNum();
+											var year = 'Year.'+checkReturn(req.body.year, '0').sanitise().toNum();
 											var branch = 'Branch.'+checkReturn(req.body.branch,'common').sanitise().stringFix();
 											var subject = 'Subject.'+checkReturn(req.body.subject,'common').sanitise().stringFix();
 											
@@ -547,6 +547,7 @@
 			}
 			if(req.query.notif) {
 				feed.IsNotif = (req.query.notif.sanitise().stringFix() == 'true')?'true':'false';
+				console.log(feed.IsNotif);
 			}
 			if(!req.query.available) {
 				feed.isAvailable = true;
@@ -619,7 +620,7 @@
 						
 						timec = Date.now();
 
-						var year = 'Year.'+checkReturn(result.value.Filters.Year,'common').sanitise().toNum();
+						var year = 'Year.'+checkReturn(result.value.Filters.Year, '0').sanitise().toNum();
 						var branch = 'Branch.'+checkReturn(result.value.Filters.Branch,'common').sanitise().stringFix();
 						var subject = 'Subject.'+checkReturn(result.value.Filters.Subject,'common').sanitise().stringFix();
 						
@@ -684,7 +685,7 @@
 							
 							timec = Date.now();
 
-							var year = 'Year.'+checkReturn(result.value.Filters.Year,'common').sanitise().toNum();
+							var year = 'Year.'+checkReturn(result.value.Filters.Year, '0').sanitise().toNum();
 							var branch = 'Branch.'+checkReturn(result.value.Filters.Branch,'common').sanitise().stringFix();
 							var subject = 'Subject.'+checkReturn(result.value.Filters.Subject,'common').sanitise().stringFix();
 							
