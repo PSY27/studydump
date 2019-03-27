@@ -38,18 +38,19 @@
 	
 	
 /*---------- Temporary solution : To be replaced by environment keys (Probably by automation) ----------*/
+/*-------------------------------- Fixed for Release : Added to heroku env keys --------------------------------*/
 
-	var privateKEY  = fs.readFileSync(path.resolve('JWTKeys/private.key'), 'utf8');
-	var publicKEY  = fs.readFileSync(path.resolve('JWTKeys/public.key'), 'utf8');
-
-
-
-	/* Preprocessing jobs */
-		if (!fs.existsSync(storageURL)){
-			fs.mkdirSync(storageURL);
-		}
-
+	var privateKEY = process.env.PRIVATE_KEY;
+	var publicKEY = process.env.PUBLIC_KEY;
+	
 /*----------------------------------------------------------------------------------------------------------------------*/
+
+
+
+/* Preprocessing folder checks*/
+	if (!fs.existsSync(storageURL)){
+		fs.mkdirSync(storageURL);
+	}
 
 
 
@@ -365,7 +366,7 @@
 					res.status(500).send('No file was sent');
 				}
 				else {
-					info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, 0).sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
+					info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false')}).toArray(function (err, result) {																											//duplicate check
 						if (err) {
 							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send(err);
@@ -387,7 +388,7 @@
 							assignThumb(req.file).then(function(thumbObj) {
 								console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 							
-								var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, 0).sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
+								var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false').sanitise().stringFix(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
 
 								info.insertOne(feed, function(err, result) {
 									if(err) {
@@ -396,21 +397,14 @@
 									}
 									else {
 										console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-										
 										addLog('File uploaded', result.ops[0]._id.toString(), logger);
 										
 										timec = Date.now();
 										
-										var year = 'Year.'+checkReturn(req.body.year, 0).sanitise().toNum();
-										var branch = 'Branch.'+checkReturn(req.body.branch,'common').sanitise().stringFix();
-										var subject = 'Subject.'+checkReturn(req.body.subject,'common').sanitise().stringFix();
+										var timefeed = {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix()};
+										timefeed['Notif'] = ((req.body.notif) == 'true')?true:false;
 										
-										var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-										if((req.body.notif) == 'true') {
-											timefeed['Notif'] = timec;
-										}
-										
-										timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+										timestamp.update(timefeed, {$set: {Timestamp:timec}}, {upsert:true}, function(err, result) {
 											if(err) {
 												console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
 												res.status(500).send(err);
@@ -455,21 +449,21 @@
 				}
 				else {
 					req.files.forEach(function(doc) {
-						info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, 0).sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif}).toArray(function (err, result) {																											//duplicate check
+						info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false')}).toArray(function (err, result) {																											//duplicate check
 							if (err) {
 								console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
-								if(!res.headersSent) res.status(500).send(err);
+								res.status(500).send(err);
 							}
 							else if (result.length) {
 								console.log('\x1b[33m', 'Warning :: Duplicate document found\n\r\x1b[0m');
 								 fs.unlink(storageURL+'/'+doc.filename, function (err) {
 									if (err) {
 										console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file\nPlease approach manually\n', err, '\n\r\x1b[0m');
-										if(!res.headersSent) res.status(500).send(err);
+										res.status(500).send(err);
 									}
 									else {
 										console.log('\x1b[36m', 'Info :: Fixed multiple uploads', '\n\r\x1b[0m');
-										if(!res.headersSent) res.status(200).send('Duplicate Found');
+										res.status(200).send('Duplicate Found');
 									}
 								});
 							}
@@ -478,12 +472,12 @@
 								assignThumb(doc).then(function(thumbObj) {
 									console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 								
-									var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, 0).sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};						
+									var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL+'/'+doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};						
 
 									info.insertOne(feed, function(err, result) {
 										if(err) {
 											console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-											if(!res.headersSent) res.status(500).send(err);
+											res.status(500).send(err);
 										}
 										else {
 											console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
@@ -491,24 +485,18 @@
 											addLog('File uploaded', result.ops[0]._id.toString(), logger);
 											
 											timec = Date.now();
-
-											var year = 'Year.'+checkReturn(req.body.year, 0).sanitise().toNum();
-											var branch = 'Branch.'+checkReturn(req.body.branch,'common').sanitise().stringFix();
-											var subject = 'Subject.'+checkReturn(req.body.subject,'common').sanitise().stringFix();
 											
-											var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-											if((req.body.notif) == 'true') {
-												timefeed['Notif'] = timec;
-											}
+											var timefeed = {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix()};
+											timefeed['Notif'] = ((req.body.notif) == 'true')?true:false;
 											
-											timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+											timestamp.update(timefeed, {$set: {Timestamp:timec}}, {upsert:true}, function(err, result) {
 												if(err) {
 													console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-													if(!res.headersSent) res.status(500).send(err);
+													res.status(500).send(err);
 												}
 												else {
 													console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-													if(!res.headersSent) res.status(200).send("OK");
+													res.status(200).send("OK");
 												}
 											});
 										}
@@ -530,6 +518,11 @@
 
 /* List Upload Route */
 	router.get('/listUploads', function(req, res) {
+		
+		var info = req.app.get('db').collection(infoDB);
+		var timestamp = req.app.get('db').collection(timestampDB);
+		var logger = req.app.get('db').collection(logDB);
+		
 		var feed = {};
 		
 		if(verifyToken(req.get('Authorization'))) {
@@ -552,10 +545,6 @@
 			if(!req.query.available) {
 				feed.isAvailable = true;
 			}
-		
-			var info = req.app.get('db').collection(infoDB);
-			var timestamp = req.app.get('db').collection(timestampDB);
-			var logger = req.app.get('db').collection(logDB);
 					
 			addLog('Uploads list sent', resolveToken(req.get('Authorization')), logger);
 			
@@ -615,28 +604,22 @@
 					}
 					else if(result.value != null) {
 						console.log('\x1b[36m', 'Info :: Like count updated', '\n\r\x1b[0m');
-						res.status(200).send("OK");
+						
 						addLog('Liked document', req.body.id, logger);
 						
 						timec = Date.now();
-
-						var year = 'Year.'+checkReturn(result.value.Filters.Year, 0).sanitise().toNum();
-						var branch = 'Branch.'+checkReturn(result.value.Filters.Branch,'common').sanitise().stringFix();
-						var subject = 'Subject.'+checkReturn(result.value.Filters.Subject,'common').sanitise().stringFix();
 						
-						var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-						if((result.notif) == 'true') {
-							timefeed['Notif'] = timec;
-						}
+						var timefeed = {Year: checkReturn(result.value.Year, '0').sanitise().toNum(), Branch: checkReturn(result.value.Branch,'common').sanitise().stringFix(), Subject: checkReturn(result.value.Subject,'common').sanitise().stringFix()};
+						timefeed['Notif'] = ((result.value.notif) == 'true')?true:false;
 						
-						timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+						timestamp.update(timefeed, {$set: {'updatedOn':timec}}, {upsert:true}, function(err, result) {
 							if(err) {
 								console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-								if(!res.headersSent) res.status(500).send(err);
+								res.status(500).send(err);
 							}
 							else {
 								console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-								if(!res.headersSent) res.status(200).send("OK");
+								res.status(200).send("OK");
 							}
 						});
 					}
@@ -667,47 +650,39 @@
 			res.download(file, getFileName(file), function(err) {
 				if(err) {
 					console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
-					if(!res.headersSent) res.status(500).send(err);
+					res.status(500).send(err);
 				}
 				else {
-					var info = req.app.get('db').collection(infoDB);
-					var timestamp = req.app.get('db').collection(timestampDB);
 					
 					addLog('Downloaded document', resolveToken(req.get('Authorization')), logger);
 					
 					info.findAndModify({DownloadURL: file}, {}, { $inc: { "Counts.DownloadCount": 1} }, {new: true}, function(err, result) {
 						if(err) {
 							console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
-							if(!res.headersSent) res.status(500).send(err);
+							res.status(500).send(err);
 						}
 						else if(result.value!=null){
 							console.log('\x1b[36m', 'Info :: Download count updated', '\n\r\x1b[0m');
 							
 							timec = Date.now();
-
-							var year = 'Year.'+checkReturn(result.value.Filters.Year, 0).sanitise().toNum();
-							var branch = 'Branch.'+checkReturn(result.value.Filters.Branch,'common').sanitise().stringFix();
-							var subject = 'Subject.'+checkReturn(result.value.Filters.Subject,'common').sanitise().stringFix();
+						
+							var timefeed = {Year: checkReturn(result.value.Year, '0').sanitise().toNum(), Branch: checkReturn(result.value.Branch,'common').sanitise().stringFix(), Subject: checkReturn(result.value.Subject,'common').sanitise().stringFix()};
+							timefeed['Notif'] = ((result.value.IsNotif) == 'true')?true:false;
 							
-							var timefeed = {DB: timec, [year]: timec, [branch]: timec, [subject]: timec};
-							if((req.body.notif) == 'true') {
-								timefeed['Notif'] = timec;
-							}
-							
-							timestamp.update({}, {$set: timefeed}, {upsert:true}, function(err, result) {
+							timestamp.update(timefeed, {$set: {Timestamp:timec}}, {upsert:true}, function(err, result) {
 								if(err) {
 									console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-									if(!res.headersSent) res.status(500).send(err);
+									res.status(500).send(err);
 								}
 								else {
 									console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-									if(!res.headersSent) res.status(200).send("OK");
+									res.status(200).send("OK");
 								}
 							});
 						}
 						else {
 							console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
-							if(!res.headersSent) res.status(200).send("Document moved...");							
+							res.status(200).send("Document moved...");							
 						}
 					});
 					console.log('\x1b[36m', 'Info :: Downloading document', '\n\r\x1b[0m');
@@ -730,37 +705,37 @@
 		var feed = {};
 		
 		if(verifyToken(req.get('Authorization'))) {
-			feed['_id']=0;
+
 			if(req.query.year) {
-				feed['Year.'+req.query.year.sanitise().toNum()] = 1;
+				feed['Year'] = req.query.year.sanitise().toNum();
 			}
-			else if(req.query.branch) {
-				feed['Branch.'+req.query.branch.sanitise().stringFix()] = 1;
+			if(req.query.branch) {
+				feed['Branch'] = req.query.branch.sanitise().stringFix();
 			}
-			else if(req.query.subject) {
-				feed['Subject.'+req.query.subject.sanitise().stringFix()] = 1;
+			if(req.query.subject) {
+				feed['Subject'] = req.query.subject.sanitise().stringFix();
 			}
-			else if(req.query.notif) {
-				feed['Notif'] = 1;
+			if(req.query.notif=='true') {
+				feed['Notif'] = true;
 			}
-			else {
-				feed['DB'] = 1;
+			else if(req.query.notif=='false') {
+				feed['Notif'] = false;
 			}
-		
+			
 			addLog('Last modified timestamp', resolveToken(req.get('Authorization')), logger);
 
-			timestamp.find({}, feed).toArray(function (err, result) {
+			timestamp.find(feed).sort({Timestamp: -1}).toArray(function (err, result) {
 				if (err) {
 					console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 					res.status(500).send(err);
 				}
-				else if (getKey(result)) {
-					console.log('\x1b[36m', 'Info :: Sent timestamp', result, '\n\r\x1b[0m');
-					res.status(200).send(getKey(result).toString());
+				else if (result) {
+					console.log('\x1b[36m', 'Info :: Sent timestamp', '\n\r\x1b[0m');
+					res.status(200).send(result[0].Timestamp.toString());
 				}
 				else {
 					console.log('\x1b[36m', 'Info :: Not a field for timestamp', '\n\r\x1b[0m');
-					if(!res.headersSent) res.status(400).send('Invalid return field');
+					res.status(400).send('Invalid return field');
 				}
 			});
 		}
