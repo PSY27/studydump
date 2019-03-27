@@ -15,10 +15,3 @@ public/images/thumbs/*
 # preserve icons
 !public/images/icons
 !public/images/icons/*
-
-###For ignoring CI test-files###
-tests/*
-#####################
-
-# ignore docs
-*.md
