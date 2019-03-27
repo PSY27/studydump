@@ -12,10 +12,16 @@
 	
 	
 /* Server Variables */
-	const MongoURL = process.env.MONGO_URL;
-
-
+	const MongoURL = 'mongodb://localhost:27017/study_dump';
 	
+	
+	
+/* Export Variables */
+	var port = 9696;
+	
+
+
+
 /* Routes */
 	var indexRouter = require('./routes/index');
 	var debugRouter = require('./routes/debug');
@@ -28,6 +34,11 @@
 
 
 
+/* Environment Selection (development | production) */
+	process.env.NODE_ENV = 'production';
+
+
+
 /* View Engine Setup */
 	app.set('views', path.join(__dirname, 'views'));
 	app.set('view engine', 'jade');
@@ -36,29 +47,26 @@
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: false }));
 	app.use(cookieParser());
-	app.use(favicon(path.join(__dirname, 'public','images','icons','favicon.ico')));
+	// app.use(favicon('/public/images/favicon.ico'));
 	app.use(express.static(path.join(__dirname, 'public')));
-	
 
 	
-/* App Debug Routing */
+	
+/* App Routing */
 	app.use('/', (process.env.NODE_ENV) == 'development' ? debugRouter : indexRouter);
 	app.use('/users', usersRouter);
-
-
-
-/* MongoClient Init */
-	MongoClient.connect(MongoURL, { useNewUrlParser: true }, function(err, client) {
+	
+	
+	
+	MongoClient.connect(MongoURL, function(err, db) {
 		if (err) {
 			console.log(`Failed to connect to the database. ${err.stack}`);
 		}
-		var db = client.db('study_dump');
 		app.set('db', db);
-		console.log(`Node.js app is listening to MongoServer`);
+		app.listen(port);
+		console.log(`Node.js app is listening at http://localhost:${port}`);
 	});
-
-
-
+	
 /* catch 404 and forward to error handler */
 	app.use(function(req, res, next) {
 	  next(createError(404));
