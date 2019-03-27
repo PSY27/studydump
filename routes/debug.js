@@ -9,9 +9,10 @@
 
 
 /* Custom Variables */
+	var MongoURL = 'mongodb://localhost:27017/study_dump';
 	var infoDB = 'info';
-	var privateKEY = process.env.PRIVATE_KEY;
-	var publicKEY = process.env.PUBLIC_KEY;
+	var privateKEY  = fs.readFileSync('./JWTKeys/private.key', 'utf8');
+	var publicKEY  = fs.readFileSync('./JWTKeys/public.key', 'utf8');
 
 	var verifyOptions = {
 		issuer:  'Regex',
@@ -28,20 +29,6 @@
 
 
 /* Token Creation */
-	router.post('/getToken', function(req, res, next) {
-		var payload = {
-			name: req.body.name,
-			userid: req.body.userid,
-		};
-	
-		var token = jwt.sign(payload, privateKEY, signOptions);
-		console.log("Token: ", token);
-		res.send(token);
-	});
-
-
-
-/* Admin Token Creation */
 	router.post('/getToken', function(req, res, next) {
 		var payload = {
 			name: req.body.name,

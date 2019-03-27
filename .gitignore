@@ -1,24 +1,17 @@
-# ignore local uploads
+# exclude local uploads
 public/images/uploads/*
 
-# preserve uploads directory
-!public/images/uploads
-!public/images/uploads/.gitkeep
-
-# ignore uploads' thumbnails
+# also their thumbnails
 public/images/thumbs/*
 
-# preserve static ones
-!public/images/thumbs/static
+# exclude data
+data/*
+
+# but not the static ones
 !public/images/thumbs/static/*
 
-# preserve icons
-!public/images/icons
-!public/images/icons/*
+# also preserve uploads directory
+!public/images/uploads/.gitkeep
 
-###For ignoring CI test-files###
-tests/*
-#####################
-
-# ignore docs
-*.md
+# except gitkeep to actually commit the folder
+!data/.gitkeep
