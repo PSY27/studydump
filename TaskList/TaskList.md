@@ -2,10 +2,13 @@
 
 Tasklist to remember during later stages of development
 
+-	Fix debug mongo
+
 ### For Server Upload
 -	favicon
 -	robots
 -	.htaccess
+-	Server autoDB script
 -	Server-side isAvailable routine check
 -	Convert debug route to server side script
 -	Server-side purge scripts for action-logging
