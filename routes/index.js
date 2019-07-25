@@ -398,7 +398,7 @@
 				else {
 					var info = req.app.get('db').collection(infoDB);
 
-					return info.find({FileName: file.originalname, FileType: file.mimetype, Size: file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false')}).toArray(function (err, result) {																											//duplicate check
+					return info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false')}).toArray(function (err, result) {																											//duplicate check
 						if (err) {
 							console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
 							res.status(500).send('Database is currently down!');
