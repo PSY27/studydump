@@ -441,41 +441,7 @@
 										});
 									}
 								});
-							})
-							else {
-								assignThumb(req.file).then(function(thumbObj) {
-									console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
-
-									var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif,'false').sanitise().stringFix(), DownloadURL: storageURL+'/'+req.file.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount:0}, isAvailable: true};
-
-									info.insertOne(feed, function(err, result) {
-										if(err) {
-											console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-											res.status(500).send(err);
-										}
-										else {
-											console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-											addLog('File uploaded', result.ops[0]._id.toString(), logger);
-
-											timec = Date.now();
-
-											var timefeed = {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch,'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject,'common').sanitise().stringFix()};
-											timefeed['Notif'] = ((req.body.notif) == 'true')?true:false;
-
-											timestamp.update(timefeed, {$set: {Timestamp:timec}}, {upsert:true}, function(err, result) {
-												if(err) {
-													console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-													res.status(500).send(err);
-												}
-												else {
-													console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-													res.status(200).send("OK");
-												}
-											});
-										}
-									});
-								});
-							}
+							});
 						});
 					}
 				});
