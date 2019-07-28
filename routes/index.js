@@ -446,12 +446,11 @@
 					}
 				});
 			}
-		}
-		else {
-			console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
-			res.status(401).send('Couldn\'t authenticate connection');
-		}
-	});
+			else {
+				console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+				res.status(401).send('Couldn\'t authenticate connection');
+			}
+		});
 
 
 
