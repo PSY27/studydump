@@ -441,7 +441,7 @@
 										});
 									}
 								});
-							}
+							})
 							else {
 								assignThumb(req.file).then(function(thumbObj) {
 									console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
