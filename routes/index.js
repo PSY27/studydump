@@ -1,24 +1,32 @@
 /* Import Declarations */
 var express = require('express');
+
 var router = express.Router();
 var path = require('path');
 var mongodb = require('mongodb');
-var MongoClient = mongodb.MongoClient;
-var assert = require('assert');
+
 var fs = require('fs');
 var jwt = require('jsonwebtoken');
 var aws = require('aws-sdk');
 var multer = require('multer');
 var multerS3 = require('multer-s3');
-var gm = require('gm').subClass({ imageMagick: true });
 var filepreview = require('filepreview-es6');
 
 
+/* ------ Temporary solution : To be replaced by environment keys (Probably by automation) ------*/
+/* ------------------------ Fixed for Release : Added to heroku env keys ------------------------*/
+
+var privateKEY = process.env.PRIVATE_KEY;
+var publicKEY = process.env.PUBLIC_KEY;
+
+/* ----------------------------------------------------------------------------------------------*/
+
+
 /* Custom Variables */
-var storageURL = 'https://' + process.env.S3_STORAGE_BUCKET_NAME + '.s3.' + process.env.S3_STORAGE_BUCKET_REGION + '.amazonaws.com/';
+var storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
 var uploadURL = 'uploads/';
-var thumbURL = storageURL + 'thumbs/';
-var staticThumbURL = storageURL + 'thumbs/static/';
+var thumbURL = `${storageURL}thumbs/`;
+var staticThumbURL = `${storageURL}thumbs/static/`;
 
 var infoDB = 'info';
 var timestampDB = 'timestamp';
@@ -29,121 +37,112 @@ var Options = require(path.resolve('custom_imports/Options'));
 
 
 aws.config.update({
-	    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-	    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-	    region: process.env.S3_STORAGE_BUCKET_REGION,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  region: process.env.S3_STORAGE_BUCKET_REGION
 });
 
-s3 = new aws.S3();
+var s3 = new aws.S3();
 
-var storage = multerS3({
-  s3: s3,
+const storage = multerS3({
+  s3,
   bucket: process.env.S3_STORAGE_BUCKET_NAME,
   acl: 'public-read',
-  key: function(req, file, cb) {
-    var FileName = file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix() + '-' + Date.now() + file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length);
+  key(req, file, cb) {
+    var FileName = `${file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)}`;
     var UploadPath = uploadURL + FileName;
     cb(null, UploadPath);
-  },
+  }
 });
 
-var upload = multer({
-  storage: storage,
-  limits: {fileSize: 1024 * 1024 * 1000},
+const upload = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 1000 }
 }).single('uploadFile');
 
-var bulk = multer({
-  storage: storage,
-  limits: {fileSize: 1024 * 1024 * 1000},
+const bulk = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 1000 }
 }).array('bulkUpload', 50);
-
-
-/* ---------- Temporary solution : To be replaced by environment keys (Probably by automation) ----------*/
-/* -------------------------------- Fixed for Release : Added to heroku env keys --------------------------------*/
-
-var privateKEY = process.env.PRIVATE_KEY;
-var publicKEY = process.env.PUBLIC_KEY;
-
-/* ----------------------------------------------------------------------------------------------------------------------*/
 
 
 /* Functions */
 // Recursive Dictionary Key Call
-var getKey = function(currkey, callback) {
+var getKey = (currkey) => {
   if (typeof currkey === 'object') {
-    for (var i in currkey) {
+    for (let i in currkey) {
       return getKey(currkey[i]);
     }
-  } else {
+  }
+  else {
     return currkey;
   }
 };
 
 
 // Resolve JWT Token (remove BEARER if exists)
-var resolveToken = function(feed, callback) {
+var resolveToken = (feed) => {
   if (feed.startsWith('Bearer')) {
     return feed.split(' ')[1];
-  } else {
-    return feed;
   }
+  return feed;
 };
 
 
 // User input integrity check function group
-String.prototype.sanitise = function(rep = '') {															// Sanitises string (Illegal characters replaced by replacement safe character)
-  return this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
-};
+String.prototype.sanitise = (rep = '') =>
+// Sanitises string (Illegal characters replaced by replacement safe character)
+  this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
 
-String.prototype.toNum = function() {																		// Removes every character that isn't numerical
-  return this.replace(/[^0-9]/g, '').toString();
-};
+String.prototype.toNum = () =>
+// Removes every character that isn't numerical
+  this.replace(/[^0-9]/g, '').toString();
 
-String.prototype.stringFix = function() {																	// Converts input string to lowercase (for consistency)
-  return this.toLowerCase().toString();
-};
+String.prototype.stringFix = () =>
+// Converts input string to lowercase (for consistency)
+  this.toLowerCase().toString();
 
-String.prototype.indentFix = function(rep = '_') {														// Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
-  return this.replace(/\s/g, rep).toString();
-};
+String.prototype.indentFix = (rep = '_') =>
+// Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
+  this.replace(/\s/g, rep).toString();
 
 
 // Check if feed exists, if not, return specified string
-var checkReturn = function(feed, alt, callback) {
+var checkReturn = (feed, alt) => {
   if (feed) return feed;
-  else return alt;
+  return alt;
 };
 
 
 // Get FileName from Path (replace timestamp)
-var getFileName = function(path, callback) {
-  return path.replace(/.*\//, '').replace(/\-(?!.*\-).*?(?=\.)/, '');
-};
+var getFileName = (filePath) => filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
 // [^\/]+(?=\-)|(?=\.).*    to get name without timestamp with extention
 
 
 // Authenticate JWT
-var verifyToken = function(feedToken) {
-
+var verifyToken = (feedToken) => {
   try {
-    if (!feedToken) throw err;
-  } catch (err) {
+    if (!feedToken) throw new Error();
+  }
+  catch (err) {
     console.log('\x1b[31m', 'Error :: No token provided with call', '\n\r\x1b[0m');
     return false;
   }
 
-  var token = resolveToken(feedToken);
+  const token = resolveToken(feedToken);
 
   try {
-    jwt.verify(token, publicKEY, Options.signOptions, function(err, decoded) {
+    jwt.verify(token, publicKEY, Options.signOptions, (err, decoded) => {
       if (decoded) {
         console.log('\x1b[32m', 'Success :: Token authorized', '\n\r\x1b[0m');
-      } else {
+      }
+      else {
         throw err;
       }
     });
     return true;
-  } catch (err) {
+  }
+  catch (err) {
     console.log('\x1b[31m', 'Error :: Couldn\'t authenticate token', '\n\r\x1b[0m');
     return false;
   }
@@ -151,14 +150,14 @@ var verifyToken = function(feedToken) {
 
 
 // Activity Logging
-var addLog = function(action, desc, db, callback) {
+var addLog = (action, desc, db) => {
+  var feed = { Action: action, Description: desc, Timestamp: Date.now() };
 
-  var feed = {Action: action, Description: desc, Timestamp: Date.now()};
-
-  db.insert(feed, function(err, result) {
+  db.insert(feed, (err) => {
     if (err) {
       console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-    } else {
+    }
+    else {
       console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
     }
   });
@@ -166,147 +165,94 @@ var addLog = function(action, desc, db, callback) {
 
 
 // Creating thumbnails
-var assignThumb = function(file, cb) {
-
-  let inFile = file.key.indentFix();
-  let thumbName = file.key.split('/').slice(-1)[0].indentFix().substring(0, file.key.lastIndexOf('.'));
-  let thumbLoc = thumbURL + thumbName.replace('.', '_') + '_thumb.jpg';
+var assignThumb = (file) => {
+  const inFile = file.key.indentFix();
+  const thumbName = file.key.split('/').slice(-1)[0].indentFix().substring(0, file.key.lastIndexOf('.'));
+  const thumbLoc = `${thumbURL + thumbName.replace('.', '_')}_thumb.jpg`;
 
   return new Promise((resolve, reject) => {
-    s3.getObject({Bucket: process.env.S3_STORAGE_BUCKET_NAME,	Key: inFile}, function(err, data) {
-			    if (err) {
+    s3.getObject({ Bucket: process.env.S3_STORAGE_BUCKET_NAME, Key: inFile }, (err, data) => {
+      if (err) {
         console.log('\x1b[31m', 'Error :: Error occured in getting s3 object stream\n', err, '\n\r\x1b[0m');
         return reject(err);
-			    } else {
-        return filepreview.generateAsync(data.Body.toString(), thumbLoc, Options.thumbOptions)
-          .then((response) => {
-            console.log('\x1b[36m', 'Info :: Response recieved\n', response, '\n\r\x1b[0m');
-            if (response.thumbnail === undefined) {
-              console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
-              let statThumb = path.extname(inFile).toLowerCase().replace('.', '') + '.png';
-              try {
-                if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
-                  return resolve({thumbnail: staticThumbURL + statThumb});
-                } else {
-                  console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
-                  return resolve({thumbnail: staticThumbURL + 'common.png'});
-                }
-              } catch (err) {
-                console.error(err);
-                return reject(err);
-              }
-            } else {
-              return resolve(response);
-            }
-          })
-          .catch(error => {
-            console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', error, '\n\r\x1b[0m');
+      }
+      return filepreview.generateAsync(data.Body.toString(), thumbLoc, Options.thumbOptions)
+        .then((response) => {
+          console.log('\x1b[36m', 'Info :: Response recieved\n', response, '\n\r\x1b[0m');
+          if (response.thumbnail === undefined) {
             console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
-            let statThumb = path.extname(inFile).toLowerCase().replace('.', '') + '.png';
+            const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
             try {
               if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
-                return resolve({thumbnail: staticThumbURL + statThumb});
-              } else {
-                console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
-                return resolve({thumbnail: staticThumbURL + 'common.png'});
+                return resolve({ thumbnail: staticThumbURL + statThumb });
               }
-            } catch (err) {
-              console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', err, '\n\r\x1b[0m');
-              return reject(err);
+              console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
+              return resolve({ thumbnail: `${staticThumbURL}common.png` });
             }
-          });
-			    }
+            catch (thumbErr) {
+              console.error(thumbErr);
+              return reject(thumbErr);
+            }
+          }
+          else {
+            return resolve(response);
+          }
+        })
+        .catch((error) => {
+          console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', error, '\n\r\x1b[0m');
+          console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
+          const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
+          try {
+            if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
+              return resolve({ thumbnail: staticThumbURL + statThumb });
+            }
+
+            console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
+            return resolve({ thumbnail: `${staticThumbURL}common.png` });
+          }
+          catch (thumbErr) {
+            console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', thumbErr, '\n\r\x1b[0m');
+            return reject(thumbErr);
+          }
+        });
     });
   });
 };
 
 
-/* ------------------------------------------------ Thumbnail Procedure Kernel---------------------------------------------------<PLZ PRESERVE>------------------------------------------------------------------------
-	// Creating thumbnails
-		var assignThumb = function(file) {
-			var catagory = file.mimetype.split('/')[0];
-			var thumbName = file.filename.substring(0, file.filename.indexOf('.')) + '_thumb.jpg';	//append _thumb to filename
-			if(catagory == 'image') {
-				try {
-					gm(storageURL+'/'+file.filename)
-						.resize("100^", "100^")
-						.gravity('Center')
-						.crop(100, 100)
-						.write(thumbURL+'/'+thumbName, (err) => {
-							if (err) {
-								throw err;
-							}
-							else {
-								console.log('\x1b[32m', 'Success :: Created thumbnail', '\n\r\x1b[0m');
-							}
-						});
-						return (thumbURL+'/'+thumbName);
-				}
-				catch (err) {
-					console.log('\x1b[31m', 'Error :: Couldn\'t create thumbnail\n', err, '\n\r\x1b[0m');
-					return err;
-				}
-			}
-			else if(catagory == 'video') {
-				try {
-					var proc = new ffmpeg({source: storageURL+'/'+file.filename})
-						.on('end', function() {
-							console.log('\x1b[32m', 'Success :: Created thumbnail', '\n\r\x1b[0m');
-						})
-						.on('error', function(err) {
-							throw err;
-						})
-						.takeScreenshots({ count: 1, timemarks: [ '5' ], filename: '%b_thumb.jpg' }, thumbURL);
-				}
-				catch (err) {
-					console.log('\x1b[31m', 'Error :: Couldn\'t create thumbnail\n', err, '\n\r\x1b[0m');
-					return err;
-				}
-				return (thumbURL+'/'+thumbName);
-			}
-			else if(catagory == 'text') {
-
-			}
-			else if(catagory == 'application') {															//see individually
-
-			}
-			else {																									//chemical,x-conference												//assign corresponding thumbnail from thumbnailArchive
-
-			}
-		}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
-
 /* Generate JWT */
-router.post('/getToken', function(req, res, next) {
+router.post('/getToken', (req, res) => {
   var logger = req.app.get('db').collection(logDB);
 
-  if (true) {																													// AUTH ONLY FOR HIGH ACCESS
-    var payload = {
+  if (true) {
+    // AUTH ONLY FOR HIGH ACCESS
+    const payload = {
       name: req.body.name.sanitise(),
-      email: req.body.email.sanitise(),
+      email: req.body.email.sanitise()
     };
 
-    var token = jwt.sign(payload, privateKEY, Options.signOptions);
+    const token = jwt.sign(payload, privateKEY, Options.signOptions);
     console.log('Token: ', token);
     res.status(200).send(token);
     addLog('Token generated', token, logger);
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
 
-/*	Structure JSON Return Route */
-router.get('/getStructure', function(req, res) {
+/* Structure JSON Return Route */
+router.get('/getStructure', (req, res) => {
   var logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
     console.log('\x1b[36m', 'Info :: Sending structure', '\n\r\x1b[0m');
     res.status(200).json(structURL);
     addLog('Structure called', resolveToken(req.get('Authorization')), logger);
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -314,32 +260,41 @@ router.get('/getStructure', function(req, res) {
 
 
 /* Search Document Route */
-router.get('/search', function(req, res){
-
+router.get('/search', (req, res) => {
   var info = req.app.get('db').collection(infoDB);
-  var logger = req.app.get('db').collection(logDB);
 
   var queryArray = req.query.s.split(',');
 
-  var sanitisedArray = queryArray.map(function(e) { return e.sanitise(); });
+  var sanitisedArray = queryArray.map(e => e.sanitise());
 
-  var regex = sanitisedArray.map(function(e) { return new RegExp('.*' + e + '.*', 'i'); });
+  var regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
 
   if (verifyToken(req.get('Authorization'))) {
-
-    info.find({ $or: [ {FileName: {$in: regex}}, {FileType: {$in: regex}}, {Filters: {Year: {$in: regex}}}, {Filters: {Branch: {$in: regex}}}, {Filters: {Subject: {$in: regex}}} ]}).toArray(function(err, result) {																											// duplicate check
+    info.find({
+      $or: [
+        { FileName: { $in: regex } },
+        { FileType: { $in: regex } },
+        { Filters: { Year: { $in: regex } } },
+        { Filters: { Branch: { $in: regex } } },
+        { Filters: { Subject: { $in: regex } } }
+      ]
+    }).toArray((err, result) => {
+      // duplicate check
       if (err) {
         console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
-      } else if (result.length) {
+      }
+      else if (result.length) {
         console.log('\x1b[36m', 'Info :: Found search result', '\n\r\x1b[0m');
         res.status(200).send(result);
-      } else {
+      }
+      else {
         console.log('\x1b[36m', 'Info :: No results found', '\n\r\x1b[0m');
         res.status(200).send('No upload found');
       }
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -347,69 +302,108 @@ router.get('/search', function(req, res){
 
 
 /* Upload File Route */
-router.post('/uploadFile', function(req, res){
-
+router.post('/uploadFile', (req, res) => {
   var info = req.app.get('db').collection(infoDB);
   var timestamp = req.app.get('db').collection(timestampDB);
   var logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
-
-    upload(req, res, function(err) {
+    upload(req, res, (err) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
-      } else if (!req.file) {
+      }
+      else if (!req.file) {
         console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
         res.status(500).send('No file was sent');
-      } else {
-        var info = req.app.get('db').collection(infoDB);
-
-        return info.find({FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif, 'false')}).toArray(function(err, result) {																											// duplicate check
-          if (err) {
-            console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
+      }
+      else {
+        return info.find({
+          FileName: req.file.originalname,
+          FileType: req.file.mimetype,
+          Size: req.file.size,
+          Filters: {
+            Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+            Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+            Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+          },
+          IsNotif: checkReturn(req.body.notif, 'false')
+        }).toArray((findErr, result) => {
+          // duplicate check
+          if (findErr) {
+            console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', findErr, '\n\r\x1b[0m');
             res.status(500).send('Database is currently down!');
-          } else if (result.length) {
+          }
+          else if (result.length) {
             console.log('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
             res.status(500).send('Duplicate found!');
-          } else {
+          }
+          else {
             console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
 
-            assignThumb(req.file).then(function(thumbObj) {
+            assignThumb(req.file).then((thumbObj) => {
               console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
-              var feed = {FileName: req.file.originalname, FileType: req.file.mimetype, Size: req.file.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(), DownloadURL: req.file.location, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount: 0}, isAvailable: true};
+              const feed = {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size,
+                Filters: {
+                  Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                  Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                  Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                },
+                IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                DownloadURL: req.file.location,
+                ThumbnailURL: thumbObj.thumbnail,
+                Counts: {
+                  DownloadCount: 0,
+                  CallCount: 0,
+                  LikeCount: 0
+                },
+                isAvailable: true
+              };
 
-              info.insertOne(feed, function(err, result) {
-                if (err) {
-                  console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-                  res.status(500).send(err);
-                } else {
+              info.insertOne(feed, (insertErr, insertResult) => {
+                if (insertErr) {
+                  console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                  res.status(500).send(insertErr);
+                }
+                else {
                   console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-                  addLog('File uploaded', result.ops[0]._id.toString(), logger);
+                  addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
 
-                  timec = Date.now();
+                  const timec = Date.now();
 
-                  var timefeed = {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()};
-                  timefeed['Notif'] = ((req.body.notif) == 'true');
+                  const timefeed = {
+                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                  };
+                  timefeed.Notif = ((req.body.notif) == 'true');
 
-                  timestamp.update(timefeed, {$set: {Timestamp: timec}}, {upsert: true}, function(err, result) {
-                    if (err) {
-                      console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-                      res.status(500).send(err);
-                    } else {
-                      console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                      res.status(200).send('File uploaded');
-                    }
-                  });
+                  timestamp.update(timefeed,
+                    { $set: { Timestamp: timec } },
+                    { upsert: true }, (errTime) => {
+                      if (err) {
+                        console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                        res.status(500).send(errTime);
+                      }
+                      else {
+                        console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                        res.status(200).send('File uploaded');
+                      }
+                    });
                 }
               });
             });
           }
         });
       }
+      return true;
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -417,67 +411,103 @@ router.post('/uploadFile', function(req, res){
 
 
 /* Bulk Upload Route */
-router.post('/bulkUpload', function(req, res){
-
+router.post('/bulkUpload', (req, res) => {
   if (verifyToken(req.get('Authorization'))) {
-    var info = req.app.get('db').collection(infoDB);
-    var timestamp = req.app.get('db').collection(timestampDB);
-    var logger = req.app.get('db').collection(logDB);
+    const info = req.app.get('db').collection(infoDB);
+    const timestamp = req.app.get('db').collection(timestampDB);
+    const logger = req.app.get('db').collection(logDB);
 
-    bulk(req, res, function(err) {
+    bulk(req, res, (err) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
-      } else if (!req.files) {
+      }
+      else if (!req.files) {
         console.log('\x1b[31m', 'Error :: No files provided', '\n\r\x1b[0m');
         res.status(500).send('No file was sent');
-      } else {
-        req.files.forEach(function(doc) {
-          info.find({FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix() }, IsNotif: checkReturn(req.body.notif, 'false')}).toArray(function(err, result) {																											// duplicate check
-            if (err) {
+      }
+      else {
+        req.files.forEach((doc) => {
+          info.find({
+            FileName: doc.originalname,
+            FileType: doc.mimetype,
+            Size: doc.size,
+            Filters: {
+              Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+              Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+              Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+            },
+            IsNotif: checkReturn(req.body.notif, 'false')
+          }).toArray((dupErr, result) => {
+            // duplicate check
+            if (dupErr) {
               console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
               res.status(500).send(err);
-            } else if (result.length) {
+            }
+            else if (result.length) {
               console.log('\x1b[33m', 'Warning :: Duplicate document found\n\r\x1b[0m');
-								 fs.unlink(storageURL + '/' + doc.filename, function(err) {
-                if (err) {
+              fs.unlink(`${storageURL}/${doc.filename}`, (delErr) => {
+                if (delErr) {
                   console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file\nPlease approach manually\n', err, '\n\r\x1b[0m');
                   res.status(500).send(err);
-                } else {
+                }
+                else {
                   console.log('\x1b[36m', 'Info :: Fixed multiple uploads', '\n\r\x1b[0m');
                   res.status(200).send('Duplicate Found');
                 }
               });
-            } else {
-
-              assignThumb(doc).then(function(thumbObj) {
+            }
+            else {
+              assignThumb(doc).then((thumbObj) => {
                 console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
-                var feed = {FileName: doc.originalname, FileType: doc.mimetype, Size: doc.size, Filters: {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix() }, IsNotif: req.body.notif.sanitise().stringFix(), DownloadURL: storageURL + '/' + doc.filename, ThumbnailURL: thumbObj.thumbnail, Counts: {DownloadCount: 0, CallCount: 0, LikeCount: 0}, isAvailable: true};
+                const feed = {
+                  FileName: doc.originalname,
+                  FileType: doc.mimetype,
+                  Size: doc.size,
+                  Filters: {
+                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                  },
+                  IsNotif: req.body.notif.sanitise().stringFix(),
+                  DownloadURL: `${storageURL}/${doc.filename}`,
+                  ThumbnailURL: thumbObj.thumbnail,
+                  Counts: { DownloadCount: 0, CallCount: 0, LikeCount: 0 },
+                  isAvailable: true
+                };
 
-                info.insertOne(feed, function(err, result) {
-                  if (err) {
-                    console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-                    res.status(500).send(err);
-                  } else {
+                info.insertOne(feed, (insertErr) => {
+                  if (insertErr) {
+                    console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                    res.status(500).send(insertErr);
+                  }
+                  else {
                     console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
 
                     addLog('File uploaded', result.ops[0]._id.toString(), logger);
 
-                    timec = Date.now();
+                    const timec = Date.now();
 
-                    var timefeed = {Year: checkReturn(req.body.year, '0').sanitise().toNum(), Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(), Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()};
-                    timefeed['Notif'] = ((req.body.notif) == 'true');
+                    const timefeed = {
+                      Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                      Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                      Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                    };
+                    timefeed.Notif = ((req.body.notif) == 'true');
 
-                    timestamp.update(timefeed, {$set: {Timestamp: timec}}, {upsert: true}, function(err, result) {
-                      if (err) {
-                        console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-                        res.status(500).send(err);
-                      } else {
-                        console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                        res.status(200).send('OK');
-                      }
-                    });
+                    timestamp.update(timefeed,
+                      { $set: { Timestamp: timec } },
+                      { upsert: true }, (timeErr) => {
+                        if (timeErr) {
+                          console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
+                          res.status(500).send(timeErr);
+                        }
+                        else {
+                          console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                          res.status(200).send('OK');
+                        }
+                      });
                   }
                 });
               });
@@ -486,7 +516,8 @@ router.post('/bulkUpload', function(req, res){
         });
       }
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -494,13 +525,11 @@ router.post('/bulkUpload', function(req, res){
 
 
 /* List Upload Route */
-router.get('/listUploads', function(req, res) {
+router.get('/listUploads', (req, res) => {
+  const info = req.app.get('db').collection(infoDB);
+  const logger = req.app.get('db').collection(logDB);
 
-  var info = req.app.get('db').collection(infoDB);
-  var timestamp = req.app.get('db').collection(timestampDB);
-  var logger = req.app.get('db').collection(logDB);
-
-  var feed = {};
+  const feed = {};
 
   if (verifyToken(req.get('Authorization'))) {
     if (req.query.year) {
@@ -525,19 +554,42 @@ router.get('/listUploads', function(req, res) {
 
     addLog('Uploads list sent', resolveToken(req.get('Authorization')), logger);
 
-    var query = info.find(feed).sort({'Counts.LikeCount': -1, 'Counts.DownloadCount': -1, 'Counts.CallCount': -1, _id: -1}).skip(req.query.page ? parseInt((req.query.page_size ? parseInt(req.query.page_size.sanitise().toNum(), 10) : 10) * (req.query.page.sanitise().toNum() - 1), 10) : 0).limit((req.query.page_size) ? parseInt(req.query.page_size.sanitise().toNum(), 10) : 10);
+    const query = info.find(feed).sort({
+      'Counts.LikeCount': -1,
+      'Counts.DownloadCount': -1,
+      'Counts.CallCount': -1,
+      _id: -1
+    }).skip(
+      req.query.page
+        ? parseInt((req.query.page_size
+          ? parseInt(req.query.page_size.sanitise().toNum(), 1)
+          : 10
+        ) * (req.query.page.sanitise().toNum() - 1), 10)
+        : 0
+    ).limit(
+      (
+        req.query.page_size
+      )
+        ? parseInt(
+          req.query.page_size.sanitise().toNum(),
+          10
+        )
+        : 10
+    );
 
-    query.toArray(function(err, result) {
-      if (err) {
-        console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
-        res.status(500).send(err);
-      } else if (result.length) {
-        res.status(200).send(result);
-        result.forEach(function(doc, key, result) {
-          info.update({_id: doc._id}, { $inc: { 'Counts.CallCount': 1} }, function(err) {
+    query.toArray((errSet, resultSet) => {
+      if (errSet) {
+        console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', errSet, '\n\r\x1b[0m');
+        res.status(500).send(errSet);
+      }
+      else if (resultSet.length) {
+        res.status(200).send(resultSet);
+        resultSet.forEach((doc, key, result) => {
+          info.update({ _id: doc._id }, { $inc: { 'Counts.CallCount': 1 } }, (err) => {
             if (err) {
               console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
-            } else {
+            }
+            else {
               console.log('\x1b[36m', 'Info :: Call count updated', '\n\r\x1b[0m');
               console.log('\x1b[36m', 'Info :: Sending documents', '\n\r\x1b[0m');
             }
@@ -546,59 +598,78 @@ router.get('/listUploads', function(req, res) {
             }
           });
         });
-      } else {
+      }
+      else {
         console.log('\x1b[36m', 'Info :: No documents found', '\n\r\x1b[0m');
         res.status(200).send('No documents found');
       }
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
 /* Update Like Count */
-router.post('/updateLike', function(req, res){
-
+router.post('/updateLike', (req, res) => {
   if (verifyToken(req.get('Authorization'))) {
-    var info = req.app.get('db').collection(infoDB);
-    var timestamp = req.app.get('db').collection(timestampDB);
-    var logger = req.app.get('db').collection(logDB);
+    const info = req.app.get('db').collection(infoDB);
+    const timestamp = req.app.get('db').collection(timestampDB);
+    const logger = req.app.get('db').collection(logDB);
 
     if (!mongodb.ObjectId.isValid(req.body.id)) {
       console.log('\x1b[31m', 'Error :: Invalid ObjectId supplied', '\n\r\x1b[0m');
       res.status(500).send('Invalid ObjectId');
-    } else {
-      info.findAndModify({_id: new mongodb.ObjectID(req.body.id)}, {}, {$inc: {'Counts.LikeCount': (req.body.dislike) ? -1 : 1}}, {new: true},	function(err, result) {
-        if (err) {
-          console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-          res.status(500).send(err);
-        } else if (result.value != null) {
-          console.log('\x1b[36m', 'Info :: Like count updated', '\n\r\x1b[0m');
-
-          addLog('Liked document', req.body.id, logger);
-
-          timec = Date.now();
-
-          var timefeed = {Year: checkReturn(result.value.Year, '0').sanitise().toNum(), Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(), Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()};
-          timefeed['Notif'] = ((result.value.notif) == 'true');
-
-          timestamp.update(timefeed, {$set: {updatedOn: timec}}, {upsert: true}, function(err, result) {
-            if (err) {
-              console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-              res.status(500).send(err);
-            } else {
-              console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-              res.status(200).send('OK');
-            }
-          });
-        } else {
-          console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
-          res.status(200).send('Document moved...');
-        }
-      });
     }
-  } else {
+    else {
+      info.findAndModify(
+        { _id: new mongodb.ObjectID(req.body.id) },
+        {},
+        { $inc: { 'Counts.LikeCount': (req.body.dislike) ? -1 : 1 } },
+        { new: true },
+        (err, result) => {
+          if (err) {
+            console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+            res.status(500).send(err);
+          }
+          else if (result.value != null) {
+            console.log('\x1b[36m', 'Info :: Like count updated', '\n\r\x1b[0m');
+
+            addLog('Liked document', req.body.id, logger);
+
+            const timec = Date.now();
+
+            const timefeed = {
+              Year: checkReturn(result.value.Year, '0').sanitise().toNum(),
+              Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
+              Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
+            };
+
+            timefeed.Notif = ((result.value.notif) == 'true');
+
+            timestamp.update(timefeed,
+              { $set: { updatedOn: timec } },
+              { upsert: true }, (timeErr) => {
+                if (timeErr) {
+                  console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
+                  res.status(500).send(timeErr);
+                }
+                else {
+                  console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                  res.status(200).send('OK');
+                }
+              });
+          }
+          else {
+            console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
+            res.status(200).send('Document moved...');
+          }
+        }
+      );
+    }
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -606,52 +677,72 @@ router.post('/updateLike', function(req, res){
 
 
 /* Download File Route */
-router.get('/download', function(req, res) {
+router.get('/download', (req, res) => {
   var info = req.app.get('db').collection(infoDB);
   var timestamp = req.app.get('db').collection(timestampDB);
   var logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
-    var file = Buffer.from(req.query.fURL, 'base64').toString('ascii');
+    const file = Buffer.from(req.query.fURL, 'base64').toString('ascii');
 
-    s3.getObject({Bucket: process.env.S3_STORAGE_BUCKET_NAME,	Key: uploadURL + file.substring(file.lastIndexOf('/') + 1)}, function(err, data) {
+    s3.getObject({
+      Bucket: process.env.S3_STORAGE_BUCKET_NAME,
+      Key: uploadURL + file.substring(file.lastIndexOf('/') + 1)
+    }, (err, data) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
-      } else {
+      }
+      else {
         addLog('Downloaded document', resolveToken(req.get('Authorization')), logger);
 
-        info.findAndModify({DownloadURL: file}, {}, { $inc: { 'Counts.DownloadCount': 1} }, {new: true}, function(err, result) {
-          if (err) {
-            console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
-            res.status(500).send(err);
-          } else if (result.value != null){
-            console.log('\x1b[36m', 'Info :: Download count updated', '\n\r\x1b[0m');
+        info.findAndModify(
+          { DownloadURL: file },
+          {},
+          { $inc: { 'Counts.DownloadCount': 1 } },
+          { new: true },
+          (downErr, result) => {
+            if (downErr) {
+              console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', downErr, '\n\r\x1b[0m');
+              res.status(500).send(downErr);
+            }
+            else if (result.value != null) {
+              console.log('\x1b[36m', 'Info :: Download count updated', '\n\r\x1b[0m');
 
-            timec = Date.now();
+              const timec = Date.now();
 
-            var timefeed = {Year: checkReturn(result.value.Year, '0').sanitise().toNum(), Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(), Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()};
-            timefeed['Notif'] = ((result.value.IsNotif) == 'true');
+              const timefeed = {
+                Year: checkReturn(result.value.Year, '0').sanitise().toNum(),
+                Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
+                Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
+              };
+              timefeed.Notif = ((result.value.IsNotif) == 'true');
 
-            timestamp.update(timefeed, {$set: {Timestamp: timec}}, {upsert: true}, function(err, result) {
-              if (err) {
-                console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', err, '\n\r\x1b[0m');
-                res.status(500).send(err);
-              } else {
-                console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                res.attachment(getFileName(file));
-						      res.send(data.Body);
-              }
-            });
-          } else {
-            console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
-            res.status(200).send('Document moved...');
+              timestamp.update(timefeed,
+                { $set: { Timestamp: timec } },
+                { upsert: true }, (timeErr) => {
+                  if (timeErr) {
+                    console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
+                    res.status(500).send(timeErr);
+                  }
+                  else {
+                    console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                    res.attachment(getFileName(file));
+                    res.send(data.Body);
+                  }
+                });
+            }
+            else {
+              console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
+              res.status(200).send('Document moved...');
+            }
           }
-        });
+        );
         console.log('\x1b[36m', 'Info :: Downloading document', '\n\r\x1b[0m');
       }
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
@@ -659,44 +750,47 @@ router.get('/download', function(req, res) {
 
 
 /* Last Modified Route */
-router.get('/lastModified', function(req, res) {
+router.get('/lastModified', (req, res) => {
   var timestamp = req.app.get('db').collection(timestampDB);
   var logger = req.app.get('db').collection(logDB);
 
   var feed = {};
 
   if (verifyToken(req.get('Authorization'))) {
-
     if (req.query.year) {
-      feed['Year'] = req.query.year.sanitise().toNum();
+      feed.Year = req.query.year.sanitise().toNum();
     }
     if (req.query.branch) {
-      feed['Branch'] = req.query.branch.sanitise().stringFix();
+      feed.Branch = req.query.branch.sanitise().stringFix();
     }
     if (req.query.subject) {
-      feed['Subject'] = req.query.subject.sanitise().stringFix();
+      feed.Subject = req.query.subject.sanitise().stringFix();
     }
     if (req.query.notif == 'true') {
-      feed['Notif'] = true;
-    } else if (req.query.notif == 'false') {
-      feed['Notif'] = false;
+      feed.Notif = true;
+    }
+    else if (req.query.notif == 'false') {
+      feed.Notif = false;
     }
 
     addLog('Last modified timestamp', resolveToken(req.get('Authorization')), logger);
 
-    timestamp.find(feed).sort({Timestamp: -1}).toArray(function(err, result) {
+    timestamp.find(feed).sort({ Timestamp: -1 }).toArray((err, result) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
-      } else if (result && result[0]) {
+      }
+      else if (result && result[0]) {
         console.log('\x1b[36m', 'Info :: Sent timestamp', '\n\r\x1b[0m');
         res.status(200).send(result[0].Timestamp.toString());
-      } else {
+      }
+      else {
         console.log('\x1b[36m', 'Info :: Timestamp does not exist', '\n\r\x1b[0m');
         res.status(400).send('0');
       }
     });
-  } else {
+  }
+  else {
     console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
     res.status(401).send('Couldn\'t authenticate connection');
   }
