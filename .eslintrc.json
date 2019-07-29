@@ -25,7 +25,13 @@
         "no-extend-native": [
           "error",
           {
-            "exceptions": ["Object"]
+            "exceptions": ["String"]
+          }
+        ],
+        "no-underscore-dangle": [
+          "error",
+          {
+            "allow": ["_id"]
           }
         ]
     }

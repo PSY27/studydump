@@ -1,39 +1,39 @@
 /* Import Declarations */
-var express = require('express');
+const express = require('express');
 
-var router = express.Router();
-var path = require('path');
-var mongodb = require('mongodb');
+const router = express.Router();
+const path = require('path');
+const mongodb = require('mongodb');
 
-var fs = require('fs');
-var jwt = require('jsonwebtoken');
-var aws = require('aws-sdk');
-var multer = require('multer');
-var multerS3 = require('multer-s3');
-var filepreview = require('filepreview-es6');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const aws = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const filepreview = require('filepreview-es6');
 
 
 /* ------ Temporary solution : To be replaced by environment keys (Probably by automation) ------*/
 /* ------------------------ Fixed for Release : Added to heroku env keys ------------------------*/
 
-var privateKEY = process.env.PRIVATE_KEY;
-var publicKEY = process.env.PUBLIC_KEY;
+const privateKEY = process.env.PRIVATE_KEY;
+const publicKEY = process.env.PUBLIC_KEY;
 
 /* ----------------------------------------------------------------------------------------------*/
 
 
 /* Custom Variables */
-var storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
-var uploadURL = 'uploads/';
-var thumbURL = `${storageURL}thumbs/`;
-var staticThumbURL = `${storageURL}thumbs/static/`;
+const storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
+const uploadURL = 'uploads/';
+const thumbURL = `${storageURL}thumbs/`;
+const staticThumbURL = `${storageURL}thumbs/static/`;
 
-var infoDB = 'info';
-var timestampDB = 'timestamp';
-var logDB = 'act_log';
+const infoDB = 'info';
+const timestampDB = 'timestamp';
+const logDB = 'act_log';
 
-var structURL = require(path.resolve('custom_imports/structure.json'));
-var Options = require(path.resolve('custom_imports/Options'));
+const structURL = require('../custom_imports/structure.json');
+const Options = require('../custom_imports/Options');
 
 
 aws.config.update({
@@ -42,15 +42,15 @@ aws.config.update({
   region: process.env.S3_STORAGE_BUCKET_REGION
 });
 
-var s3 = new aws.S3();
+const s3 = new aws.S3();
 
 const storage = multerS3({
   s3,
   bucket: process.env.S3_STORAGE_BUCKET_NAME,
   acl: 'public-read',
   key(req, file, cb) {
-    var FileName = `${file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)}`;
-    var UploadPath = uploadURL + FileName;
+    const FileName = `${file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)}`;
+    const UploadPath = uploadURL + FileName;
     cb(null, UploadPath);
   }
 });
@@ -67,21 +67,8 @@ const bulk = multer({
 
 
 /* Functions */
-// Recursive Dictionary Key Call
-var getKey = (currkey) => {
-  if (typeof currkey === 'object') {
-    for (let i in currkey) {
-      return getKey(currkey[i]);
-    }
-  }
-  else {
-    return currkey;
-  }
-};
-
-
 // Resolve JWT Token (remove BEARER if exists)
-var resolveToken = (feed) => {
+const resolveToken = (feed) => {
   if (feed.startsWith('Bearer')) {
     return feed.split(' ')[1];
   }
@@ -90,37 +77,44 @@ var resolveToken = (feed) => {
 
 
 // User input integrity check function group
-String.prototype.sanitise = (rep = '') =>
-// Sanitises string (Illegal characters replaced by replacement safe character)
+String.prototype.sanitise = function sanitise(rep = '') {
+  // Sanitises string (Illegal characters replaced by replacement safe character)
   this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
+};
 
-String.prototype.toNum = () =>
-// Removes every character that isn't numerical
+String.prototype.toNum = function toNum() {
+  // Removes every character that isn't numerical
   this.replace(/[^0-9]/g, '').toString();
+};
 
-String.prototype.stringFix = () =>
-// Converts input string to lowercase (for consistency)
+String.prototype.stringFix = function stringFix() {
+  // Converts input string to lowercase (for consistency)
   this.toLowerCase().toString();
+};
 
-String.prototype.indentFix = (rep = '_') =>
-// Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
+String.prototype.indentFix = function indexFix(rep = '_') {
+  // Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
   this.replace(/\s/g, rep).toString();
+};
 
 
 // Check if feed exists, if not, return specified string
-var checkReturn = (feed, alt) => {
+const checkReturn = (feed, alt) => {
   if (feed) return feed;
   return alt;
 };
 
 
 // Get FileName from Path (replace timestamp)
-var getFileName = (filePath) => filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
+const getFileName = filePath => filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
 // [^\/]+(?=\-)|(?=\.).*    to get name without timestamp with extention
 
 
+// Return High Auth Check
+const checkHighAuth = () => true;
+
 // Authenticate JWT
-var verifyToken = (feedToken) => {
+const verifyToken = (feedToken) => {
   try {
     if (!feedToken) throw new Error();
   }
@@ -150,8 +144,8 @@ var verifyToken = (feedToken) => {
 
 
 // Activity Logging
-var addLog = (action, desc, db) => {
-  var feed = { Action: action, Description: desc, Timestamp: Date.now() };
+const addLog = (action, desc, db) => {
+  const feed = { Action: action, Description: desc, Timestamp: Date.now() };
 
   db.insert(feed, (err) => {
     if (err) {
@@ -165,7 +159,7 @@ var addLog = (action, desc, db) => {
 
 
 // Creating thumbnails
-var assignThumb = (file) => {
+const assignThumb = (file) => {
   const inFile = file.key.indentFix();
   const thumbName = file.key.split('/').slice(-1)[0].indentFix().substring(0, file.key.lastIndexOf('.'));
   const thumbLoc = `${thumbURL + thumbName.replace('.', '_')}_thumb.jpg`;
@@ -222,9 +216,9 @@ var assignThumb = (file) => {
 
 /* Generate JWT */
 router.post('/getToken', (req, res) => {
-  var logger = req.app.get('db').collection(logDB);
+  const logger = req.app.get('db').collection(logDB);
 
-  if (true) {
+  if (checkHighAuth()) {
     // AUTH ONLY FOR HIGH ACCESS
     const payload = {
       name: req.body.name.sanitise(),
@@ -245,7 +239,7 @@ router.post('/getToken', (req, res) => {
 
 /* Structure JSON Return Route */
 router.get('/getStructure', (req, res) => {
-  var logger = req.app.get('db').collection(logDB);
+  const logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
     console.log('\x1b[36m', 'Info :: Sending structure', '\n\r\x1b[0m');
@@ -261,13 +255,13 @@ router.get('/getStructure', (req, res) => {
 
 /* Search Document Route */
 router.get('/search', (req, res) => {
-  var info = req.app.get('db').collection(infoDB);
+  const info = req.app.get('db').collection(infoDB);
 
-  var queryArray = req.query.s.split(',');
+  const queryArray = req.query.s.split(',');
 
-  var sanitisedArray = queryArray.map(e => e.sanitise());
+  const sanitisedArray = queryArray.map(e => e.sanitise());
 
-  var regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
+  const regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
 
   if (verifyToken(req.get('Authorization'))) {
     info.find({
@@ -303,9 +297,9 @@ router.get('/search', (req, res) => {
 
 /* Upload File Route */
 router.post('/uploadFile', (req, res) => {
-  var info = req.app.get('db').collection(infoDB);
-  var timestamp = req.app.get('db').collection(timestampDB);
-  var logger = req.app.get('db').collection(logDB);
+  const info = req.app.get('db').collection(infoDB);
+  const timestamp = req.app.get('db').collection(timestampDB);
+  const logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
     upload(req, res, (err) => {
@@ -380,7 +374,7 @@ router.post('/uploadFile', (req, res) => {
                     Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                     Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   };
-                  timefeed.Notif = ((req.body.notif) == 'true');
+                  timefeed.Notif = ((req.body.notif) === 'true');
 
                   timestamp.update(timefeed,
                     { $set: { Timestamp: timec } },
@@ -494,7 +488,7 @@ router.post('/bulkUpload', (req, res) => {
                       Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                       Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
                     };
-                    timefeed.Notif = ((req.body.notif) == 'true');
+                    timefeed.Notif = ((req.body.notif) === 'true');
 
                     timestamp.update(timefeed,
                       { $set: { Timestamp: timec } },
@@ -545,7 +539,7 @@ router.get('/listUploads', (req, res) => {
       feed.FileType = req.query.type.sanitise().stringFix().replace('.', '');
     }
     if (req.query.notif) {
-      feed.IsNotif = (req.query.notif.sanitise().stringFix() == 'true') ? 'true' : 'false';
+      feed.IsNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
       console.log(feed.IsNotif);
     }
     if (!req.query.available) {
@@ -646,7 +640,7 @@ router.post('/updateLike', (req, res) => {
               Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
             };
 
-            timefeed.Notif = ((result.value.notif) == 'true');
+            timefeed.Notif = ((result.value.notif) === 'true');
 
             timestamp.update(timefeed,
               { $set: { updatedOn: timec } },
@@ -678,9 +672,9 @@ router.post('/updateLike', (req, res) => {
 
 /* Download File Route */
 router.get('/download', (req, res) => {
-  var info = req.app.get('db').collection(infoDB);
-  var timestamp = req.app.get('db').collection(timestampDB);
-  var logger = req.app.get('db').collection(logDB);
+  const info = req.app.get('db').collection(infoDB);
+  const timestamp = req.app.get('db').collection(timestampDB);
+  const logger = req.app.get('db').collection(logDB);
 
   if (verifyToken(req.get('Authorization'))) {
     const file = Buffer.from(req.query.fURL, 'base64').toString('ascii');
@@ -716,7 +710,7 @@ router.get('/download', (req, res) => {
                 Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
                 Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
               };
-              timefeed.Notif = ((result.value.IsNotif) == 'true');
+              timefeed.Notif = ((result.value.IsNotif) === 'true');
 
               timestamp.update(timefeed,
                 { $set: { Timestamp: timec } },
@@ -751,10 +745,10 @@ router.get('/download', (req, res) => {
 
 /* Last Modified Route */
 router.get('/lastModified', (req, res) => {
-  var timestamp = req.app.get('db').collection(timestampDB);
-  var logger = req.app.get('db').collection(logDB);
+  const timestamp = req.app.get('db').collection(timestampDB);
+  const logger = req.app.get('db').collection(logDB);
 
-  var feed = {};
+  const feed = {};
 
   if (verifyToken(req.get('Authorization'))) {
     if (req.query.year) {
@@ -766,10 +760,10 @@ router.get('/lastModified', (req, res) => {
     if (req.query.subject) {
       feed.Subject = req.query.subject.sanitise().stringFix();
     }
-    if (req.query.notif == 'true') {
+    if (req.query.notif === 'true') {
       feed.Notif = true;
     }
-    else if (req.query.notif == 'false') {
+    else if (req.query.notif === 'false') {
       feed.Notif = false;
     }
 

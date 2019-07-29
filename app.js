@@ -2,7 +2,6 @@
 const createError = require('http-errors');
 const express = require('express');
 const cors = require('cors');
-const aws = require('aws-sdk');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
@@ -28,7 +27,7 @@ var app = express();
 
 
 /* CORS - Must change to custom on deploy */
- 	app.use(cors());
+app.use(cors());
 
 
 /* View Engine Setup */
@@ -44,7 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 /* App Debug Routing */
-app.use('/', (process.env.NODE_ENV) == 'development' ? debugRouter : indexRouter);
+app.use('/', (process.env.NODE_ENV) === 'development' ? debugRouter : indexRouter);
 app.use('/users', usersRouter);
 
 
@@ -53,7 +52,7 @@ MongoClient.connect(MongoURL, { useNewUrlParser: true }, (err, client) => {
   if (err) {
     console.log(`Failed to connect to the database. ${err.stack}`);
   }
-  var db = client.db('study_dump');
+  const db = client.db('study_dump');
   app.set('db', db);
   console.log('Node.js app is listening to MongoServer');
 });
@@ -61,19 +60,19 @@ MongoClient.connect(MongoURL, { useNewUrlParser: true }, (err, client) => {
 
 /* catch 404 and forward to error handler */
 app.use((req, res, next) => {
-	  next(createError(404));
+  next(createError(404));
 });
 
 
 /* error handler */
-app.use((err, req, res, next) => {
-	  // set locals, only providing error in development
-	  res.locals.message = err.message;
-	  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use((err, req, res) => {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-	  // render the error page
-	  res.status(err.status || 500);
-	  res.render('error');
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
 });
 
 

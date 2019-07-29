@@ -1,12 +1,17 @@
+const GM = require('gm');
+const FFMPEG = require('ffmpeg');
 
+const storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
+const thumbURL = `${storageURL}thumbs/`;
 
-var assignThumb = function (file) {
-  var catagory = file.mimetype.split('/')[0];
-  var thumbName = `${file.filename.substring(0, file.filename.indexOf('.'))
-  }_thumb.jpg`;	// append _thumb to filename
-  if (catagory == 'image') {
+const assignThumb = (file) => {
+  const catagory = file.mimetype.split('/')[0];
+  const thumbName = `${file.filename.substring(0, file.filename.indexOf('.'))
+  }_thumb.jpg`;
+  // append _thumb to filename
+  if (catagory === 'image') {
     try {
-      gm(`${storageURL}/${file.filename}`)
+      GM(`${storageURL}/${file.filename}`)
         .resize('100^', '100^')
         .gravity('Center')
         .crop(100, 100)
@@ -25,9 +30,9 @@ var assignThumb = function (file) {
       return err;
     }
   }
-  else if (catagory == 'video') {
+  else if (catagory === 'video') {
     try {
-      let proc = new ffmpeg({ source: `${storageURL}/${file.filename}` })
+      new FFMPEG({ source: `${storageURL}/${file.filename}` })
         .on('end', () => {
           console.log('\x1b[32m', 'Success :: Created thumbnail', '\n\r\x1b[0m');
         })
@@ -42,13 +47,18 @@ var assignThumb = function (file) {
     }
     return (`${thumbURL}/${thumbName}`);
   }
-  else if (catagory == 'text') {
+  else if (catagory === 'text') {
+    // Get shot
+  }
+  else if (catagory === 'application') {
+    // see individually
 
   }
-  else if (catagory == 'application') {															// see individually
+  else {
+    // chemical,x-conference
+    // assign corresponding thumbnail from thumbnailArchive
 
   }
-  else {																									// chemical,x-conference												//assign corresponding thumbnail from thumbnailArchive
 
-  }
+  return true;
 };
