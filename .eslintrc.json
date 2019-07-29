@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "extends": "airbnb-base",
   "env": {
     "es6": true,
@@ -42,42 +41,4 @@
       }
     ]
   }
-=======
-    "extends": "airbnb-base",
-    "env": {
-        "es6": true,
-        "browser": true
-    },
-    "rules": {
-        "brace-style": [
-            "error",
-            "stroustrup"
-        ],
-        "comma-dangle": [
-            "error",
-            "never"
-        ],
-        "no-unused-vars": [
-            "warn"
-        ],
-        "no-var": [
-            "off"
-        ],
-        "one-var": [
-            "off"
-        ],
-        "no-extend-native": [
-          "error",
-          {
-            "exceptions": ["String"]
-          }
-        ],
-        "no-underscore-dangle": [
-          "error",
-          {
-            "allow": ["_id"]
-          }
-        ]
-    }
->>>>>>> d3405ef5033e0c50581812da17e90c26682811be
 }
