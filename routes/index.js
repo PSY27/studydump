@@ -682,7 +682,7 @@ router.get('/download', (req, res) => {
 
     s3.getObject({
       Bucket: process.env.S3_STORAGE_BUCKET_NAME,
-      Key: uploadURL + file.substring(file.lastIndexOf('/') + 1)
+      Key: file.replace(/^(.*?\/\/.*?)\/,/g).toString()
     }, (err, data) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
