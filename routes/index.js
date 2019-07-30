@@ -729,7 +729,11 @@ router.get('/download', (req, res) => {
             }
             else {
               console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
-              res.status(200).send('Document moved...');
+              if(data.Body) {
+                res.attachment(getFileName(file));
+                res.send(data.Body);
+              }
+              else res.status(200).send('Document moved...');
             }
           }
         );
