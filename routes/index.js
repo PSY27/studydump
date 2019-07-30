@@ -49,7 +49,7 @@ const storage = multerS3({
   bucket: process.env.S3_STORAGE_BUCKET_NAME,
   acl: 'public-read',
   key(req, file, cb) {
-    const FileName = `${file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)}`;
+    const FileName = `${file.originalname.substring(0, file.originalname.lastIndexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length)}`;
     const UploadPath = uploadURL + FileName;
     cb(null, UploadPath);
   }
@@ -335,62 +335,63 @@ router.post('/uploadFile', (req, res) => {
           else {
             console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
 
-            assignThumb(req.file).then((thumbObj) => {
-              console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+            // assignThumb(req.file).then((thumbObj) => {
+            // console.log('\x1b[36m',
+            // 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
-              const feed = {
-                FileName: req.file.originalname,
-                FileType: req.file.mimetype,
-                Size: req.file.size,
-                Filters: {
+            const feed = {
+              FileName: req.file.originalname,
+              FileType: req.file.mimetype,
+              Size: req.file.size,
+              Filters: {
+                Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+              },
+              IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+              DownloadURL: req.file.location,
+              ThumbnailURL: /* thumbObj.thumbnail */ `${staticThumbURL}common.png`,
+              Counts: {
+                DownloadCount: 0,
+                CallCount: 0,
+                LikeCount: 0
+              },
+              isAvailable: true
+            };
+
+            info.insertOne(feed, (insertErr, insertResult) => {
+              if (insertErr) {
+                console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                res.status(500).send(insertErr);
+              }
+              else {
+                console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
+                addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+
+                const timec = Date.now();
+
+                const timefeed = {
                   Year: checkReturn(req.body.year, '0').sanitise().toNum(),
                   Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                   Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
-                },
-                IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
-                DownloadURL: req.file.location,
-                ThumbnailURL: thumbObj.thumbnail,
-                Counts: {
-                  DownloadCount: 0,
-                  CallCount: 0,
-                  LikeCount: 0
-                },
-                isAvailable: true
-              };
+                };
+                timefeed.Notif = ((req.body.notif) === 'true');
 
-              info.insertOne(feed, (insertErr, insertResult) => {
-                if (insertErr) {
-                  console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
-                  res.status(500).send(insertErr);
-                }
-                else {
-                  console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-                  addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
-
-                  const timec = Date.now();
-
-                  const timefeed = {
-                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
-                  };
-                  timefeed.Notif = ((req.body.notif) === 'true');
-
-                  timestamp.update(timefeed,
-                    { $set: { Timestamp: timec } },
-                    { upsert: true }, (errTime) => {
-                      if (err) {
-                        console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
-                        res.status(500).send(errTime);
-                      }
-                      else {
-                        console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                        res.status(200).send('File uploaded');
-                      }
-                    });
-                }
-              });
+                timestamp.update(timefeed,
+                  { $set: { Timestamp: timec } },
+                  { upsert: true }, (errTime) => {
+                    if (err) {
+                      console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                      res.status(500).send(errTime);
+                    }
+                    else {
+                      console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                      res.status(200).send('File uploaded');
+                    }
+                  });
+              }
             });
+            // });
           }
         });
       }
