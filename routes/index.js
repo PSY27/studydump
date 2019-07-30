@@ -79,22 +79,22 @@ const resolveToken = (feed) => {
 // User input integrity check function group
 String.prototype.sanitise = function sanitise(rep = '') {
   // Sanitises string (Illegal characters replaced by replacement safe character)
-  this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
+  return this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
 };
 
 String.prototype.toNum = function toNum() {
   // Removes every character that isn't numerical
-  this.replace(/[^0-9]/g, '').toString();
+  return this.replace(/[^0-9]/g, '').toString();
 };
 
 String.prototype.stringFix = function stringFix() {
   // Converts input string to lowercase (for consistency)
-  this.toLowerCase().toString();
+  return this.toLowerCase().toString();
 };
 
 String.prototype.indentFix = function indexFix(rep = '_') {
   // Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
-  this.replace(/\s/g, rep).toString();
+  return this.replace(/\s/g, rep).toString();
 };
 
 
