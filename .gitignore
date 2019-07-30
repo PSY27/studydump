@@ -1,5 +1,8 @@
 ## Node/Express
 
+# OSX specific files
+.DS_Store
+
 # Logs
 logs
 *.log
