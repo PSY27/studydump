@@ -49,7 +49,7 @@ const storage = multerS3({
   bucket: process.env.S3_STORAGE_BUCKET_NAME,
   acl: 'public-read',
   key(req, file, cb) {
-    const FileName = `${file.originalname.substring(0, file.originalname.indexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.indexOf('.'), file.originalname.length)}`;
+    const FileName = `${file.originalname.substring(0, file.originalname.lastIndexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length)}`;
     const UploadPath = uploadURL + FileName;
     cb(null, UploadPath);
   }
