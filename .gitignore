@@ -47,13 +47,6 @@ locks/
 
 ## Application
 
-# ignore local uploads
-public/images/uploads/*
-
-# preserve uploads directory
-!public/images/uploads
-!public/images/uploads/.gitkeep
-
 # ignore uploads' thumbnails
 public/images/thumbs/*
 

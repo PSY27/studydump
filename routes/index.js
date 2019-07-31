@@ -5,7 +5,6 @@ const router = express.Router();
 const path = require('path');
 const mongodb = require('mongodb');
 
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const aws = require('aws-sdk');
 const multer = require('multer');
@@ -335,63 +334,62 @@ router.post('/uploadFile', (req, res) => {
           else {
             console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
 
-            // assignThumb(req.file).then((thumbObj) => {
-            // console.log('\x1b[36m',
-            // 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+            assignThumb(req.file).then((thumbObj) => {
+              console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
-            const feed = {
-              FileName: req.file.originalname,
-              FileType: req.file.mimetype,
-              Size: req.file.size,
-              Filters: {
-                Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
-              },
-              IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
-              DownloadURL: req.file.location,
-              ThumbnailURL: /* thumbObj.thumbnail */ `${staticThumbURL}common.png`,
-              Counts: {
-                DownloadCount: 0,
-                CallCount: 0,
-                LikeCount: 0
-              },
-              isAvailable: true
-            };
-
-            info.insertOne(feed, (insertErr, insertResult) => {
-              if (insertErr) {
-                console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
-                res.status(500).send(insertErr);
-              }
-              else {
-                console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-                addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
-
-                const timec = Date.now();
-
-                const timefeed = {
+              const feed = {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size,
+                Filters: {
                   Year: checkReturn(req.body.year, '0').sanitise().toNum(),
                   Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                   Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
-                };
-                timefeed.Notif = ((req.body.notif) === 'true');
+                },
+                IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                DownloadURL: req.file.location,
+                ThumbnailURL: thumbObj.thumbnail,
+                Counts: {
+                  DownloadCount: 0,
+                  CallCount: 0,
+                  LikeCount: 0
+                },
+                isAvailable: true
+              };
 
-                timestamp.update(timefeed,
-                  { $set: { Timestamp: timec } },
-                  { upsert: true }, (errTime) => {
-                    if (err) {
-                      console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
-                      res.status(500).send(errTime);
-                    }
-                    else {
-                      console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                      res.status(200).send('File uploaded');
-                    }
-                  });
-              }
+              info.insertOne(feed, (insertErr, insertResult) => {
+                if (insertErr) {
+                  console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                  res.status(500).send(insertErr);
+                }
+                else {
+                  console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
+                  addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+
+                  const timec = Date.now();
+
+                  const timefeed = {
+                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
+                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                  };
+                  timefeed.Notif = ((req.body.notif) === 'true');
+
+                  timestamp.update(timefeed,
+                    { $set: { Timestamp: timec } },
+                    { upsert: true }, (errTime) => {
+                      if (err) {
+                        console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                        res.status(500).send(errTime);
+                      }
+                      else {
+                        console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                        res.status(200).send('File uploaded');
+                      }
+                    });
+                }
+              });
             });
-            // });
           }
         });
       }
@@ -407,22 +405,22 @@ router.post('/uploadFile', (req, res) => {
 
 /* Bulk Upload Route */
 router.post('/bulkUpload', (req, res) => {
-  if (verifyToken(req.get('Authorization'))) {
-    const info = req.app.get('db').collection(infoDB);
-    const timestamp = req.app.get('db').collection(timestampDB);
-    const logger = req.app.get('db').collection(logDB);
+  const info = req.app.get('db').collection(infoDB);
+  const timestamp = req.app.get('db').collection(timestampDB);
+  const logger = req.app.get('db').collection(logDB);
 
+  if (verifyToken(req.get('Authorization'))) {
     bulk(req, res, (err) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
         res.status(500).send(err);
       }
       else if (!req.files) {
-        console.log('\x1b[31m', 'Error :: No files provided', '\n\r\x1b[0m');
+        console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
         res.status(500).send('No file was sent');
       }
       else {
-        req.files.forEach((doc) => {
+        return req.files.forEach((doc) => {
           info.find({
             FileName: doc.originalname,
             FileType: doc.mimetype,
@@ -433,27 +431,20 @@ router.post('/bulkUpload', (req, res) => {
               Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
             },
             IsNotif: checkReturn(req.body.notif, 'false')
-          }).toArray((dupErr, result) => {
-            // duplicate check
-            if (dupErr) {
-              console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
-              res.status(500).send(err);
+          }).toArray((findErr, result) => {
+          // duplicate check
+            if (findErr) {
+              console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', findErr, '\n\r\x1b[0m');
+              res.status(500).send('Database is currently down!');
             }
             else if (result.length) {
-              console.log('\x1b[33m', 'Warning :: Duplicate document found\n\r\x1b[0m');
-              fs.unlink(`${storageURL}/${doc.filename}`, (delErr) => {
-                if (delErr) {
-                  console.log('\x1b[31m', 'Error :: Couldn\'t delete temporary file\nPlease approach manually\n', err, '\n\r\x1b[0m');
-                  res.status(500).send(err);
-                }
-                else {
-                  console.log('\x1b[36m', 'Info :: Fixed multiple uploads', '\n\r\x1b[0m');
-                  res.status(200).send('Duplicate Found');
-                }
-              });
+              console.log('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
+              res.status(500).send('Duplicate found!');
             }
             else {
-              assignThumb(doc).then((thumbObj) => {
+              console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
+
+              assignThumb(req.file).then((thumbObj) => {
                 console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
 
                 const feed = {
@@ -465,22 +456,25 @@ router.post('/bulkUpload', (req, res) => {
                     Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                     Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   },
-                  IsNotif: req.body.notif.sanitise().stringFix(),
-                  DownloadURL: `${storageURL}/${doc.filename}`,
+                  IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                  DownloadURL: doc.location,
                   ThumbnailURL: thumbObj.thumbnail,
-                  Counts: { DownloadCount: 0, CallCount: 0, LikeCount: 0 },
+                  Counts: {
+                    DownloadCount: 0,
+                    CallCount: 0,
+                    LikeCount: 0
+                  },
                   isAvailable: true
                 };
 
-                info.insertOne(feed, (insertErr) => {
+                info.insertOne(feed, (insertErr, insertResult) => {
                   if (insertErr) {
                     console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
                     res.status(500).send(insertErr);
                   }
                   else {
                     console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-
-                    addLog('File uploaded', result.ops[0]._id.toString(), logger);
+                    addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
 
                     const timec = Date.now();
 
@@ -493,14 +487,14 @@ router.post('/bulkUpload', (req, res) => {
 
                     timestamp.update(timefeed,
                       { $set: { Timestamp: timec } },
-                      { upsert: true }, (timeErr) => {
-                        if (timeErr) {
-                          console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
-                          res.status(500).send(timeErr);
+                      { upsert: true }, (errTime) => {
+                        if (err) {
+                          console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                          res.status(500).send(errTime);
                         }
                         else {
                           console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                          res.status(200).send('OK');
+                          res.status(200).send('Files uploaded');
                         }
                       });
                   }
@@ -510,6 +504,7 @@ router.post('/bulkUpload', (req, res) => {
           });
         });
       }
+      return true;
     });
   }
   else {
@@ -729,7 +724,7 @@ router.get('/download', (req, res) => {
             }
             else {
               console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
-              if(data.Body) {
+              if (data.Body) {
                 res.attachment(getFileName(file));
                 res.send(data.Body);
               }

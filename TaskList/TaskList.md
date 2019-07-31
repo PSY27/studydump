@@ -2,8 +2,6 @@
 
 Tasklist to remember during later stages of development
 
-  -	Fix debug mongo
-
 ### For Server Upload
   -	favicon
   -	robots
@@ -15,9 +13,11 @@ Tasklist to remember during later stages of development
   -	Make server side scripts for management
   -	Store public n private keys in venv vars (ssh-keygen)
   -	Blacklist IPs trying multiple times to create jwt
-  -	Use modded filepreview middleware
   -	Security and stress check
   -	Server support for GraphicsMagick				//images
   -	Server support for ghostscript						//pdfs
   -	Server support for ffmpeg							//videos
   -	Server support for unoconv/libreoffice			//pdf
+  - Duplicate check
+  - Check spam
+  - create thumbnails
