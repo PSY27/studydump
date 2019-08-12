@@ -17,7 +17,7 @@ const publicKEY = process.env.PUBLIC_KEY;
 
 /* Index Route */
 router.get('/', (req, res) => {
-  res.render('index', { title: 'Testing' });
+  res.render('index', { title: 'Admin Panel' });
 });
 
 
@@ -118,7 +118,7 @@ router.post('/delete/:id', (req, res) => {
             });
           }
         });
-        res.redirect('/view');
+        res.redirect('../view');
       }
     });
   }

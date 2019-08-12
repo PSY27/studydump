@@ -263,15 +263,33 @@ router.get('/search', (req, res) => {
   const regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
 
   if (verifyToken(req.get('Authorization'))) {
-    info.find({
-      $or: [
-        { FileName: { $in: regex } },
-        { FileType: { $in: regex } },
-        { Filters: { Year: { $in: regex } } },
-        { Filters: { Branch: { $in: regex } } },
-        { Filters: { Subject: { $in: regex } } }
-      ]
-    }).toArray((err, result) => {
+    const filters = { Year: {}, Branch: {}, Subject: {} };
+
+    if (req.query.year) {
+      filters.Year = { 'Filters.Year': req.query.year.sanitise().toNum() };
+    }
+    if (req.query.branch) {
+      filters.Branch = { 'Filters.Branch': req.query.branch.sanitise().stringFix() };
+    }
+    if (req.query.subject) {
+      filters.Subject = { 'Filters.Subject': req.query.subject.sanitise().stringFix() };
+    }
+
+    info.find(
+      {
+        $and: [
+          filters.Year,
+          filters.Branch,
+          filters.Subject,
+          {
+            $or: [
+              { FileName: { $in: regex } },
+              { FileType: { $in: regex } }
+            ]
+          }
+        ]
+      }
+    ).toArray((err, result) => {
       // duplicate check
       if (err) {
         console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');

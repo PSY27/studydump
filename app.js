@@ -21,7 +21,7 @@ const MongoURL = process.env.MONGO_URL;
 
 /* Routes */
 const indexRouter = require('./routes/index');
-const debugRouter = require('./routes/debug');
+const adminRouter = require('./routes/admin');
 const usersRouter = require('./routes/users');
 
 
@@ -46,7 +46,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 /* App Debug Routing */
-app.use('/', (process.env.NODE_ENV) === 'development' ? debugRouter : indexRouter);
+app.use('/', indexRouter);
+app.use('/admin', adminRouter);
 app.use('/users', usersRouter);
 
 
