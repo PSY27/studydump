@@ -218,7 +218,6 @@ router.post('/getToken', (req, res) => {
   const logger = req.app.get('db').collection(logDB);
 
   if (checkHighAuth()) {
-    // AUTH ONLY FOR HIGH ACCESS
     const payload = {
       name: req.body.name.sanitise(),
       email: req.body.email.sanitise()
@@ -263,24 +262,22 @@ router.get('/search', (req, res) => {
   const regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
 
   if (verifyToken(req.get('Authorization'))) {
-    const filters = { Year: {}, Branch: {}, Subject: {} };
+    const feed = {};
 
     if (req.query.year) {
-      filters.Year = { 'Filters.Year': req.query.year.sanitise().toNum() };
+      feed['Filters.Year'] = req.query.year.sanitise().toNum();
     }
     if (req.query.branch) {
-      filters.Branch = { 'Filters.Branch': req.query.branch.sanitise().stringFix() };
+      feed['Filters.Branch'] = req.query.branch.sanitise().stringFix();
     }
     if (req.query.subject) {
-      filters.Subject = { 'Filters.Subject': req.query.subject.sanitise().stringFix() };
+      feed['Filters.Subject'] = req.query.subject.sanitise().stringFix();
     }
 
     info.find(
       {
         $and: [
-          filters.Year,
-          filters.Branch,
-          filters.Subject,
+          feed,
           {
             $or: [
               { FileName: { $in: regex } },
@@ -372,7 +369,8 @@ router.post('/uploadFile', (req, res) => {
                   CallCount: 0,
                   LikeCount: 0
                 },
-                isAvailable: true
+                isAvailable: true,
+                uploadTime: Date.now()
               };
 
               info.insertOne(feed, (insertErr, insertResult) => {
@@ -482,7 +480,8 @@ router.post('/bulkUpload', (req, res) => {
                     CallCount: 0,
                     LikeCount: 0
                   },
-                  isAvailable: true
+                  isAvailable: true,
+                  uploadTime: Date.now()
                 };
 
                 info.insertOne(feed, (insertErr, insertResult) => {
@@ -537,9 +536,9 @@ router.get('/listUploads', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const logger = req.app.get('db').collection(logDB);
 
-  const feed = {};
-
   if (verifyToken(req.get('Authorization'))) {
+    const feed = {};
+
     if (req.query.year) {
       feed['Filters.Year'] = req.query.year.sanitise().toNum();
     }
