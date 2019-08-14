@@ -1,27 +1,33 @@
-/* Import Declarations */
+/* Legacy Modules */
 const express = require('express');
-
-const router = express.Router();
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const mongodb = require('mongodb');
 
 
-/* Custom Variables */
-const infoDB = 'info';
-const Options = require('../custom_imports/Options');
+/* Custom Options */
+const structURL = require('../models/structure.json');
+const Options = require('../models/Options');
 
+
+/* Custom Variables */
+const infoDB = 'info';      // Fix
 const privateKEY = process.env.PRIVATE_KEY;
 const publicKEY = process.env.PUBLIC_KEY;
 
 
-/* Index Route */
+/* Module Pre-Init */
+const router = express.Router();
+
+
+/* Routes */
+
+// Index Route
 router.get('/', (req, res) => {
   res.render('index', { title: 'Admin Panel' });
 });
 
-
-/* Token Creation */
+// Token Creation
 router.post('/getToken', (req, res) => {
   const payload = {
     name: req.body.name,
@@ -29,12 +35,11 @@ router.post('/getToken', (req, res) => {
   };
 
   const token = jwt.sign(payload, privateKEY, Options.signOptions);
-  console.log('Token: ', token);
+  logger.info('Token : ', token);
   res.send(token);
 });
 
-
-/* Admin Token Creation */
+// Admin Token Creation
 router.post('/getToken', (req, res) => {
   const payload = {
     name: req.body.name,
@@ -46,11 +51,11 @@ router.post('/getToken', (req, res) => {
 });
 
 
-/* Verifying Token */
+// Verifying Token
 router.get('/verifyToken', (req, res) => {
   jwt.verify(req.get('Authorization').split(' ')[1], publicKEY, Options.signOptions, (err) => {
     if (err) {
-      console.log('\nJWT verification result: ');
+      logger.info('JWT verification result: ');
       res.send('NAH');
     }
     else {
@@ -60,8 +65,7 @@ router.get('/verifyToken', (req, res) => {
   });
 });
 
-
-/* View Documents Route */
+// View Documents Route
 router.get('/view', (req, res) => {
   if (true) {
     const info = req.app.get('db').collection(infoDB);
@@ -88,22 +92,20 @@ router.get('/view', (req, res) => {
   }
 });
 
-
-/* Delete Documents Route */
+// Delete Documents Route
 router.post('/delete/:id', (req, res) => {
   if (true) {
-    // HIGH AUTH REQUIRED
 
     const info = req.app.get('db').collection(infoDB);
 
-    info.deleteOne({ _id: new mongodb.ObjectId(req.params.id) }, (err, result) => {
+    info.deleteOne({ _id: new mongodb.ObjectId(req.params.id) }, (err) => {
       if (err) {
         console.log('\x1b[31m', 'Error :: Can\'t run query\n\r', err, '\x1b[0m');
         res.status(500).send(err);
       }
       else {
         console.log('\x1b[36m', 'Info :: Removed document from database\n\r', '\x1b[0m');
-        fs.access(req.body.url, (fsErr, fsRes) => {
+        fs.access(req.body.url, (fsErr) => {
           if (fsErr) {
             console.log('\x1b[31m', 'Error :: No url supplied\n\r', fsErr, '\x1b[0m');
           }

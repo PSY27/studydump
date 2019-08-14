@@ -1,74 +1,71 @@
-/* Import Requires */
+/* Legacy Modules */
 const createError = require('http-errors');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const mongo = require('mongodb');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
-
-const { MongoClient } = mongo;
-
-/* Setting up environment */
-dotenv.config();
-
-/* Server Variables */
-const MongoURL = process.env.MONGO_URL;
+const dotenv = require('dotenv').config();
 
 
-/* Routes */
+/* Import Services */
+const mongoService = require('./services/MongoService');
+
+
+/* Import Utils */
+const debugLog = require('./utils/DebugLogger');
+
+
+/* Import Routes */
 const indexRouter = require('./routes/index');
 const adminRouter = require('./routes/admin');
 const usersRouter = require('./routes/users');
 
 
-/* Initializing App */
+/* Module Pre-Init */
+const MongoURL = process.env.MONGO_URL;
+
+// Initializing App
 const app = express();
 
 
-/* CORS - Must change to custom on deploy */
+/* App Setup */
+
+// CORS - Must change to custom on deploy
 app.use(cors());
 
-
-/* View Engine Setup */
+// View Engine Setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(favicon(path.join(__dirname, 'public', 'images', 'icons', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-/* App Debug Routing */
+// App Routing
 app.use('/', indexRouter);
 app.use('/admin', adminRouter);
 app.use('/users', usersRouter);
 
-
-/* MongoClient Init */
-MongoClient.connect(MongoURL, { useNewUrlParser: true }, (err, client) => {
-  if (err) {
-    console.log(`Failed to connect to the database. ${err.stack}`);
-  }
-  const db = client.db('study_dump');
-  app.set('db', db);
-  console.log('Node.js app is listening to MongoServer');
-});
+// Mongo Initialization
+mongoService.init(MongoURL)
+  .then((db) => {
+    app.set('db', db);
+  })
+  .catch((err) => {
+    debugLog.error('Fatal : Mongo unaccessible', err);
+  });
 
 
-/* catch 404 and forward to error handler */
+/* 404 Handler */
 app.use((req, res, next) => {
   next(createError(404));
 });
 
 
-/* error handler */
+/* Error Handler */
 app.use((err, req, res) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
@@ -80,4 +77,5 @@ app.use((err, req, res) => {
 });
 
 
+/* Module Exports */
 module.exports = app;

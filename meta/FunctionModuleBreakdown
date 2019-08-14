@@ -1,0 +1,58 @@
+core
+  Thumbnail
+    - create
+    - @ref/getThumbLoc
+    - @ref/getStatThumbName
+
+  Duplicates
+    - checkDuplicate
+    - regression
+
+routes
+  - admin
+  - index
+  - users
+
+scripts
+  - automaton
+
+services
+  MongoService
+    - init
+    - getDB
+
+  Authorization
+    - createToken
+    - extractToken
+    - verifyToken
+    - checkHighAuth
+
+  LogService
+    - debugLogger
+    - addLog
+
+utils
+  StringExtensions
+    - sanitise
+    - toNum
+    - stringFix
+    - indentFix
+
+  NullUndefFix
+    - checkReturn
+
+  QueryExtension
+    - Paginate
+
+  MetaManip
+    - addTimestamp
+    - removeTimestamp
+    - getThumbName
+    - getStatThumbName
+
+  RetrieveOpts
+    - isTypeSupported
+
+Model
+  getUploadFormat
+  getCheckFormat

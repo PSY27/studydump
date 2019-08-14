@@ -1,39 +1,41 @@
-/* Import Declarations */
+/* Legacy Modules */
 const express = require('express');
-
-const router = express.Router();
-const path = require('path');
 const mongodb = require('mongodb');
-
-const jwt = require('jsonwebtoken');
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const filepreview = require('filepreview-es6');
 
 
-/* ------ Temporary solution : To be replaced by environment keys (Probably by automation) ------*/
-/* ------------------------ Fixed for Release : Added to heroku env keys ------------------------*/
+/* Import Core */
+const thumbCore = require('../core/Thumbnails');
 
-const privateKEY = process.env.PRIVATE_KEY;
-const publicKEY = process.env.PUBLIC_KEY;
 
-/* ----------------------------------------------------------------------------------------------*/
+/* Import Services */
+const auth = require('../services/Authorization');
+const logService = require('../services/LogService');
+
+
+/* Import Utils */
+const nundef = require('../utils/NullUndef');
+const metafetch = require('../utils/MetaManip');
+const debugLog = require('../utils/DebugLogger');
+require('../utils/StringExtensions');
+
+
+/* Custom Options */
+const structURL = require('../models/structure.json');
+const Options = require('../models/Options');
 
 
 /* Custom Variables */
-const storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
 const uploadURL = 'uploads/';
-const thumbURL = `${storageURL}thumbs/`;
-const staticThumbURL = `${storageURL}thumbs/static/`;
-
 const infoDB = 'info';
 const timestampDB = 'timestamp';
 const logDB = 'act_log';
 
-const structURL = require('../custom_imports/structure.json');
-const Options = require('../custom_imports/Options');
 
+/* Module Pre-Init */
+const router = express.Router();
 
 aws.config.update({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -56,212 +58,46 @@ const storage = multerS3({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 1024 * 1024 * 1000 }
+  limits: Options.fileLimit
 }).single('uploadFile');
 
 const bulk = multer({
   storage,
-  limits: { fileSize: 1024 * 1024 * 1000 }
+  limits: Options.fileLimit
 }).array('bulkUpload', 50);
 
 
-/* Functions */
-// Resolve JWT Token (remove BEARER if exists)
-const resolveToken = (feed) => {
-  if (feed.startsWith('Bearer')) {
-    return feed.split(' ')[1];
-  }
-  return feed;
-};
+/* Routes */
 
-
-// User input integrity check function group
-String.prototype.sanitise = function sanitise(rep = '') {
-  // Sanitises string (Illegal characters replaced by replacement safe character)
-  return this.replace(/[|&;$%@"<*>()+,]/g, rep).toString();
-};
-
-String.prototype.toNum = function toNum() {
-  // Removes every character that isn't numerical
-  return this.replace(/[^0-9]/g, '').toString();
-};
-
-String.prototype.stringFix = function stringFix() {
-  // Converts input string to lowercase (for consistency)
-  return this.toLowerCase().toString();
-};
-
-String.prototype.indentFix = function indexFix(rep = '_') {
-  // Replaces indent (space, tab, newline) with defined replacement character (for URLs mainly)
-  return this.replace(/\s/g, rep).toString();
-};
-
-
-// Check if feed exists, if not, return specified string
-const checkReturn = (feed, alt) => {
-  if (feed) return feed;
-  return alt;
-};
-
-
-// Get FileName from Path (replace timestamp)
-const getFileName = filePath => filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
-// [^\/]+(?=\-)|(?=\.).*    to get name without timestamp with extention
-
-
-// Return High Auth Check
-const checkHighAuth = () => true;
-
-// Authenticate JWT
-const verifyToken = (feedToken) => {
-  try {
-    if (!feedToken) throw new Error();
-  }
-  catch (err) {
-    console.log('\x1b[31m', 'Error :: No token provided with call', '\n\r\x1b[0m');
-    return false;
-  }
-
-  const token = resolveToken(feedToken);
-
-  try {
-    jwt.verify(token, publicKEY, Options.signOptions, (err, decoded) => {
-      if (decoded) {
-        console.log('\x1b[32m', 'Success :: Token authorized', '\n\r\x1b[0m');
-      }
-      else {
-        throw err;
-      }
-    });
-    return true;
-  }
-  catch (err) {
-    console.log('\x1b[31m', 'Error :: Couldn\'t authenticate token', '\n\r\x1b[0m');
-    return false;
-  }
-};
-
-
-// Activity Logging
-const addLog = (action, desc, db) => {
-  const feed = { Action: action, Description: desc, Timestamp: Date.now() };
-
-  db.insert(feed, (err) => {
-    if (err) {
-      console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
-    }
-    else {
-      console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-    }
-  });
-};
-
-
-// Creating thumbnails
-const assignThumb = (file) => {
-  const inFile = file.key.indentFix();
-  const thumbName = file.key.split('/').slice(-1)[0].indentFix().substring(0, file.key.lastIndexOf('.'));
-  const thumbLoc = `${thumbURL + thumbName.replace('.', '_')}_thumb.jpg`;
-
-  return new Promise((resolve, reject) => {
-    s3.getObject({ Bucket: process.env.S3_STORAGE_BUCKET_NAME, Key: inFile }, (err, data) => {
-      if (err) {
-        console.log('\x1b[31m', 'Error :: Error occured in getting s3 object stream\n', err, '\n\r\x1b[0m');
-        return reject(err);
-      }
-      return filepreview.generateAsync(data.Body.toString(), thumbLoc, Options.thumbOptions)
-        .then((response) => {
-          console.log('\x1b[36m', 'Info :: Response recieved\n', response, '\n\r\x1b[0m');
-          if (response.thumbnail === undefined) {
-            console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
-            const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
-            try {
-              if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
-                return resolve({ thumbnail: staticThumbURL + statThumb });
-              }
-              console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
-              return resolve({ thumbnail: `${staticThumbURL}common.png` });
-            }
-            catch (thumbErr) {
-              console.error(thumbErr);
-              return reject(thumbErr);
-            }
-          }
-          else {
-            return resolve(response);
-          }
-        })
-        .catch((error) => {
-          console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', error, '\n\r\x1b[0m');
-          console.log('\x1b[36m', 'Info :: Assigning respective pseudo thumbnail', '\n\r\x1b[0m');
-          const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
-          try {
-            if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
-              return resolve({ thumbnail: staticThumbURL + statThumb });
-            }
-
-            console.log('\x1b[36m', 'Info :: Couldn\'t find suitable icon. Dropping to default icon', '\n\r\x1b[0m');
-            return resolve({ thumbnail: `${staticThumbURL}common.png` });
-          }
-          catch (thumbErr) {
-            console.log('\x1b[31m', 'Error :: Caught an error while creating thumbnails\n', thumbErr, '\n\r\x1b[0m');
-            return reject(thumbErr);
-          }
-        });
-    });
-  });
-};
-
-
-/* Generate JWT */
+// Generate JWT
 router.post('/getToken', (req, res) => {
   const logger = req.app.get('db').collection(logDB);
 
-  if (checkHighAuth()) {
+  if (auth.checkHighAuth()) {
     const payload = {
       name: req.body.name.sanitise(),
       email: req.body.email.sanitise()
     };
 
-    const token = jwt.sign(payload, privateKEY, Options.signOptions);
-    console.log('Token: ', token);
+    const token = auth.createToken(payload);
     res.status(200).send(token);
-    addLog('Token generated', token, logger);
+    logService.addLog('Token generated', token, logger);
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-
-/* Structure JSON Return Route */
-router.get('/getStructure', (req, res) => {
-  const logger = req.app.get('db').collection(logDB);
-
-  if (verifyToken(req.get('Authorization'))) {
-    console.log('\x1b[36m', 'Info :: Sending structure', '\n\r\x1b[0m');
-    res.status(200).json(structURL);
-    addLog('Structure called', resolveToken(req.get('Authorization')), logger);
-  }
-  else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
-    res.status(401).send('Couldn\'t authenticate connection');
-  }
-});
-
-
-/* Search Document Route */
+// Search Document Route
 router.get('/search', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
 
-  const queryArray = req.query.s.split(',');
+  if (auth.verifyToken(req.get('Authorization'))) {
+    const queryArray = req.query.s.split(',');
+    const sanitisedArray = queryArray.map(e => e.sanitise());
+    const regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
 
-  const sanitisedArray = queryArray.map(e => e.sanitise());
-
-  const regex = sanitisedArray.map(e => new RegExp(`.*${e}.*`, 'i'));
-
-  if (verifyToken(req.get('Authorization'))) {
     const feed = {};
 
     if (req.query.year) {
@@ -287,42 +123,56 @@ router.get('/search', (req, res) => {
         ]
       }
     ).toArray((err, result) => {
-      // duplicate check
       if (err) {
-        console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
+        debugLog.error('Collection couldn\'t be read', err);
         res.status(500).send(err);
       }
       else if (result.length) {
-        console.log('\x1b[36m', 'Info :: Found search result', '\n\r\x1b[0m');
+        // duplicate check
+        debugLog.info('Found search result');
         res.status(200).send(result);
       }
       else {
-        console.log('\x1b[36m', 'Info :: No results found', '\n\r\x1b[0m');
+        debugLog.info('No results found');
         res.status(200).send('No upload found');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
+// Return Structure JSON
+router.get('/getStructure', (req, res) => {
+  const logger = req.app.get('db').collection(logDB);
 
-/* Upload File Route */
+  if (auth.verifyToken(req.get('Authorization'))) {
+    debugLog.info('Sending structure');
+    res.status(200).json(structURL);
+    logService.addLog('Structure called', auth.resolveToken(req.get('Authorization')), logger);
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).send('Couldn\'t authenticate connection');
+  }
+});
+
+// Upload File Route
 router.post('/uploadFile', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const timestamp = req.app.get('db').collection(timestampDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     upload(req, res, (err) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
+        debugLog.error('File couldn\'t be uploaded', err);
         res.status(500).send(err);
       }
       else if (!req.file) {
-        console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
+        debugLog.error('No file provided');
         res.status(500).send('No file was sent');
       }
       else {
@@ -331,37 +181,37 @@ router.post('/uploadFile', (req, res) => {
           FileType: req.file.mimetype,
           Size: req.file.size,
           Filters: {
-            Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-            Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-            Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+            Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+            Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+            Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
           },
-          IsNotif: checkReturn(req.body.notif, 'false')
+          IsNotif: nundef.checkReturn(req.body.notif, 'false')
         }).toArray((findErr, result) => {
-          // duplicate check
           if (findErr) {
-            console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', findErr, '\n\r\x1b[0m');
+            debugLog.error('Collection couldn\'t be read', findErr);
             res.status(500).send('Database is currently down!');
           }
           else if (result.length) {
-            console.log('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
+            // duplicate check
+            debugLog.warn('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
             res.status(500).send('Duplicate found!');
           }
           else {
-            console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
+            debugLog.info('File uploaded successfully');
 
-            assignThumb(req.file).then((thumbObj) => {
-              console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+            thumbCore.assignThumb(req.file).then((thumbObj) => {
+              debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
 
               const feed = {
                 FileName: req.file.originalname,
                 FileType: req.file.mimetype,
                 Size: req.file.size,
                 Filters: {
-                  Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                  Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                  Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                  Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                  Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                  Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                 },
-                IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                 DownloadURL: req.file.location,
                 ThumbnailURL: thumbObj.thumbnail,
                 Counts: {
@@ -375,19 +225,19 @@ router.post('/uploadFile', (req, res) => {
 
               info.insertOne(feed, (insertErr, insertResult) => {
                 if (insertErr) {
-                  console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                  debugLog.error('Can\'t insert into database', insertErr);
                   res.status(500).send(insertErr);
                 }
                 else {
-                  console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-                  addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+                  debugLog.success('Inserted into database');
+                  logService.addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
 
                   const timec = Date.now();
 
                   const timefeed = {
-                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                    Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                    Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                    Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   };
                   timefeed.Notif = ((req.body.notif) === 'true');
 
@@ -395,11 +245,11 @@ router.post('/uploadFile', (req, res) => {
                     { $set: { Timestamp: timec } },
                     { upsert: true }, (errTime) => {
                       if (err) {
-                        console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                        debugLog.error('Can\'t update timestamp', errTime);
                         res.status(500).send(errTime);
                       }
                       else {
-                        console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                        debugLog.info('Timestamp updated');
                         res.status(200).send('File uploaded');
                       }
                     });
@@ -413,26 +263,25 @@ router.post('/uploadFile', (req, res) => {
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-
-/* Bulk Upload Route */
+// Bulk Upload
 router.post('/bulkUpload', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const timestamp = req.app.get('db').collection(timestampDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     bulk(req, res, (err) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: File couldn\'t be uploaded\n', err, '\n\r\x1b[0m');
+        debugLog.error('File couldn\'t be uploaded', err);
         res.status(500).send(err);
       }
       else if (!req.files) {
-        console.log('\x1b[31m', 'Error :: No file provided', '\n\r\x1b[0m');
+        debugLog.error('No file provided');
         res.status(500).send('No file was sent');
       }
       else {
@@ -442,37 +291,37 @@ router.post('/bulkUpload', (req, res) => {
             FileType: doc.mimetype,
             Size: doc.size,
             Filters: {
-              Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-              Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-              Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+              Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+              Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+              Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
             },
-            IsNotif: checkReturn(req.body.notif, 'false')
+            IsNotif: nundef.checkReturn(req.body.notif, 'false')
           }).toArray((findErr, result) => {
-          // duplicate check
             if (findErr) {
-              console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', findErr, '\n\r\x1b[0m');
+              debugLog.error('Collection couldn\'t be read', findErr);
               res.status(500).send('Database is currently down!');
             }
             else if (result.length) {
-              console.log('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
+              // duplicate check
+              debugLog.warn('Duplicate document found');
               res.status(500).send('Duplicate found!');
             }
             else {
-              console.log('\x1b[36m', 'Info :: File uploaded successfully', '\n\r\x1b[0m');
+              debugLog.success('File uploaded successfully');
 
-              assignThumb(req.file).then((thumbObj) => {
-                console.log('\x1b[36m', 'Info :: Thumbnail generated at\n', thumbObj.thumbnail, '\n\r\x1b[0m');
+              thumbCore.assignThumb(req.file).then((thumbObj) => {
+                debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
 
                 const feed = {
                   FileName: doc.originalname,
                   FileType: doc.mimetype,
                   Size: doc.size,
                   Filters: {
-                    Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                    Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                    Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                    Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                    Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                    Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   },
-                  IsNotif: checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                  IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                   DownloadURL: doc.location,
                   ThumbnailURL: thumbObj.thumbnail,
                   Counts: {
@@ -486,19 +335,19 @@ router.post('/bulkUpload', (req, res) => {
 
                 info.insertOne(feed, (insertErr, insertResult) => {
                   if (insertErr) {
-                    console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', insertErr, '\n\r\x1b[0m');
+                    debugLog.error('Can\'t insert into database', insertErr);
                     res.status(500).send(insertErr);
                   }
                   else {
-                    console.log('\x1b[32m', 'Success :: Inserted into database', '\n\r\x1b[0m');
-                    addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+                    debugLog.success('Inserted into database');
+                    logService.addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
 
                     const timec = Date.now();
 
                     const timefeed = {
-                      Year: checkReturn(req.body.year, '0').sanitise().toNum(),
-                      Branch: checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                      Subject: checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                      Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                      Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                      Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                     };
                     timefeed.Notif = ((req.body.notif) === 'true');
 
@@ -506,11 +355,11 @@ router.post('/bulkUpload', (req, res) => {
                       { $set: { Timestamp: timec } },
                       { upsert: true }, (errTime) => {
                         if (err) {
-                          console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', errTime, '\n\r\x1b[0m');
+                          debugLog.error('Can\'t update timestamp', errTime);
                           res.status(500).send(errTime);
                         }
                         else {
-                          console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                          debugLog.info('Timestamp updated');
                           res.status(200).send('Files uploaded');
                         }
                       });
@@ -525,18 +374,17 @@ router.post('/bulkUpload', (req, res) => {
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-
-/* List Upload Route */
+// List Uploads
 router.get('/listUploads', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     const feed = {};
 
     if (req.query.year) {
@@ -553,13 +401,12 @@ router.get('/listUploads', (req, res) => {
     }
     if (req.query.notif) {
       feed.IsNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
-      console.log(feed.IsNotif);
     }
     if (!req.query.available) {
       feed.isAvailable = true;
     }
 
-    addLog('Uploads list sent', resolveToken(req.get('Authorization')), logger);
+    logService.addLog('Uploads list sent', auth.resolveToken(req.get('Authorization')), logger);
 
     const query = info.find(feed).sort({
       'Counts.LikeCount': -1,
@@ -586,47 +433,44 @@ router.get('/listUploads', (req, res) => {
 
     query.toArray((errSet, resultSet) => {
       if (errSet) {
-        console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', errSet, '\n\r\x1b[0m');
+        debugLog.error('Collection couldn\'t be read', errSet);
         res.status(500).send(errSet);
       }
       else if (resultSet.length) {
         res.status(200).send(resultSet);
-        resultSet.forEach((doc, key, result) => {
+        resultSet.forEach((doc) => {
           info.update({ _id: doc._id }, { $inc: { 'Counts.CallCount': 1 } }, (err) => {
             if (err) {
-              console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', err, '\n\r\x1b[0m');
+              debugLog.error('Query couldn\'t be executed', err);
             }
             else {
-              console.log('\x1b[36m', 'Info :: Call count updated', '\n\r\x1b[0m');
-              console.log('\x1b[36m', 'Info :: Sending documents', '\n\r\x1b[0m');
-            }
-            if (Object.is(result.length, key)) {
-              console.log('\x1b[36m', 'Info :: I was called now', '\n\r\x1b[0m');
+              debugLog.info('Call count updated');
+              debugLog.info('Sending documents');
             }
           });
         });
       }
       else {
-        console.log('\x1b[36m', 'Info :: No documents found', '\n\r\x1b[0m');
+        debugLog.info('No documents found');
         res.status(200).send('No documents found');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-/* Update Like Count */
+// Update Like Count
 router.post('/updateLike', (req, res) => {
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     const info = req.app.get('db').collection(infoDB);
     const timestamp = req.app.get('db').collection(timestampDB);
     const logger = req.app.get('db').collection(logDB);
 
     if (!mongodb.ObjectId.isValid(req.body.id)) {
-      console.log('\x1b[31m', 'Error :: Invalid ObjectId supplied', '\n\r\x1b[0m');
+      debugLog.error('Invalid ObjectId supplied', req.body.id);
       res.status(500).send('Invalid ObjectId');
     }
     else {
@@ -637,20 +481,20 @@ router.post('/updateLike', (req, res) => {
         { new: true },
         (err, result) => {
           if (err) {
-            console.log('\x1b[31m', 'Error :: Can\'t insert into database\n', err, '\n\r\x1b[0m');
+            debugLog.error('Can\'t insert into database', err);
             res.status(500).send(err);
           }
           else if (result.value != null) {
-            console.log('\x1b[36m', 'Info :: Like count updated', '\n\r\x1b[0m');
+            debugLog.info('Like count updated');
 
-            addLog('Liked document', req.body.id, logger);
+            logService.addLog('Liked document', req.body.id, logger);
 
             const timec = Date.now();
 
             const timefeed = {
-              Year: checkReturn(result.value.Year, '0').sanitise().toNum(),
-              Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
-              Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
+              Year: nundef.checkReturn(result.value.Year, '0').sanitise().toNum(),
+              Branch: nundef.checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
+              Subject: nundef.checkReturn(result.value.Subject, 'common').sanitise().stringFix()
             };
 
             timefeed.Notif = ((result.value.notif) === 'true');
@@ -659,17 +503,17 @@ router.post('/updateLike', (req, res) => {
               { $set: { updatedOn: timec } },
               { upsert: true }, (timeErr) => {
                 if (timeErr) {
-                  console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
+                  debugLog.error('Can\'t update timestamp', timeErr);
                   res.status(500).send(timeErr);
                 }
                 else {
-                  console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
+                  debugLog.info('Timestamp updated');
                   res.status(200).send('OK');
                 }
               });
           }
           else {
-            console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
+            debugLog.info('Document not found', result);
             res.status(200).send('Document moved...');
           }
         }
@@ -677,19 +521,18 @@ router.post('/updateLike', (req, res) => {
     }
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-
-/* Download File Route */
+// Download File
 router.get('/download', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const timestamp = req.app.get('db').collection(timestampDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     const file = Buffer.from(req.query.fURL, 'base64').toString('ascii');
 
     s3.getObject({
@@ -697,11 +540,11 @@ router.get('/download', (req, res) => {
       Key: file.split('/').slice(3).join('/')
     }, (err, data) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: File couldn\'t be retrieved\n', err, '\n\r\x1b[0m');
+        debugLog.error('File couldn\'t be retrieved', err);
         res.status(500).send(err);
       }
       else {
-        addLog('Downloaded document', resolveToken(req.get('Authorization')), logger);
+        logService.addLog('Downloaded document', auth.resolveToken(req.get('Authorization')), logger);
 
         info.findAndModify(
           { DownloadURL: file },
@@ -710,18 +553,18 @@ router.get('/download', (req, res) => {
           { new: true },
           (downErr, result) => {
             if (downErr) {
-              console.log('\x1b[31m', 'Error :: Query couldn\'t be executed\n', downErr, '\n\r\x1b[0m');
+              debugLog.error('Query couldn\'t be executed', downErr);
               res.status(500).send(downErr);
             }
             else if (result.value != null) {
-              console.log('\x1b[36m', 'Info :: Download count updated', '\n\r\x1b[0m');
+              debugLog.info('Download count updated');
 
               const timec = Date.now();
 
               const timefeed = {
-                Year: checkReturn(result.value.Year, '0').sanitise().toNum(),
-                Branch: checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
-                Subject: checkReturn(result.value.Subject, 'common').sanitise().stringFix()
+                Year: nundef.checkReturn(result.value.Year, '0').sanitise().toNum(),
+                Branch: nundef.checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
+                Subject: nundef.checkReturn(result.value.Subject, 'common').sanitise().stringFix()
               };
               timefeed.Notif = ((result.value.IsNotif) === 'true');
 
@@ -729,45 +572,44 @@ router.get('/download', (req, res) => {
                 { $set: { Timestamp: timec } },
                 { upsert: true }, (timeErr) => {
                   if (timeErr) {
-                    console.log('\x1b[31m', 'Error :: Can\'t update timestamp\n', timeErr, '\n\r\x1b[0m');
+                    debugLog.error('Can\'t update timestamp', timeErr);
                     res.status(500).send(timeErr);
                   }
                   else {
-                    console.log('\x1b[36m', 'Info :: Timestamp updated', '\n\r\x1b[0m');
-                    res.attachment(getFileName(file));
+                    debugLog.info('Timestamp updated');
+                    res.attachment(metafetch.getFileName(file));
                     res.send(data.Body);
                   }
                 });
             }
             else {
-              console.log('\x1b[36m', 'Info :: Document not found', result, '\n\r\x1b[0m');
+              debugLog.info('Document not found', result);
               if (data.Body) {
-                res.attachment(getFileName(file));
+                res.attachment(metafetch.getFileName(file));
                 res.send(data.Body);
               }
               else res.status(200).send('Document moved...');
             }
           }
         );
-        console.log('\x1b[36m', 'Info :: Downloading document', '\n\r\x1b[0m');
+        debugLog.info('Downloading document');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-
-/* Last Modified Route */
+// Last Modified
 router.get('/lastModified', (req, res) => {
   const timestamp = req.app.get('db').collection(timestampDB);
   const logger = req.app.get('db').collection(logDB);
 
   const feed = {};
 
-  if (verifyToken(req.get('Authorization'))) {
+  if (auth.verifyToken(req.get('Authorization'))) {
     if (req.query.year) {
       feed.Year = req.query.year.sanitise().toNum();
     }
@@ -784,28 +626,29 @@ router.get('/lastModified', (req, res) => {
       feed.Notif = false;
     }
 
-    addLog('Last modified timestamp', resolveToken(req.get('Authorization')), logger);
+    logService.addLog('Last modified timestamp', auth.resolveToken(req.get('Authorization')), logger);
 
     timestamp.find(feed).sort({ Timestamp: -1 }).toArray((err, result) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: Collection couldn\'t be read\n', err, '\n\r\x1b[0m');
+        debugLog.error('Collection couldn\'t be read', err);
         res.status(500).send(err);
       }
       else if (result && result[0]) {
-        console.log('\x1b[36m', 'Info :: Sent timestamp', '\n\r\x1b[0m');
+        debugLog.info('Sent timestamp');
         res.status(200).send(result[0].Timestamp.toString());
       }
       else {
-        console.log('\x1b[36m', 'Info :: Timestamp does not exist', '\n\r\x1b[0m');
+        debugLog.info('Timestamp does not exist');
         res.status(400).send('0');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\n\r\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
 
+/* Module Exports */
 module.exports = router;

@@ -1,5 +1,13 @@
 #	Study Dump API
 
+
+  - Fix custom_imports
+  - Fix users and admin route
+  - Remove dots from import
+  - replace insert and update by insertone and updateone
+
+
+
 Tasklist to remember during later stages of development
 
 ### For Server Upload

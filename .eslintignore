@@ -45,6 +45,15 @@ locks
 .env
 .env.test
 
+# History kernels
+Kernel
+
+# Meta listings
+TaskList
+CHANGELOG.md
+README.md
+
+
 ## Application
 
 # ignore uploads' thumbnails

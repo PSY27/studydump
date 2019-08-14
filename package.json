@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "pretest": "eslint --ignore-path .gitignore ."
+    "pretest": "eslint .",
+    "test": "npm run pretest"
   },
   "dependencies": {
     "assert": "^2.0.0",
