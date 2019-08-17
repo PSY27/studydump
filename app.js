@@ -1,25 +1,27 @@
 /* Legacy Modules */
 const createError = require('http-errors');
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv').config();
+require('dotenv').config({ silent: process.env.NODE_ENV === 'production' });
+require('module-alias/register');
 
 
 /* Import Services */
-const mongoService = require('./services/MongoService');
+const mongoService = require('@services/MongoService');
 
 
 /* Import Utils */
-const debugLog = require('./utils/DebugLogger');
+const debugLog = require('@utils/DebugLogger');
 
 
 /* Import Routes */
-const indexRouter = require('./routes/index');
-const adminRouter = require('./routes/admin');
-const usersRouter = require('./routes/users');
+const indexRouter = require('@routes/index');
+const adminRouter = require('@routes/admin');
+const usersRouter = require('@routes/users');
 
 
 /* Module Pre-Init */
@@ -29,20 +31,37 @@ const MongoURL = process.env.MONGO_URL;
 const app = express();
 
 
-/* App Setup */
+/* CORS Setup */
+const whitelist = JSON.parse(process.env.CORS_WHITELIST);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
 
-// CORS - Must change to custom on deploy
-app.use(cors());
+    return callback(new Error('Not allowed by CORS'), false);
+  }
+};
+
+app.use(cors(process.env.NODE_ENV === 'development' ? '' : corsOptions));
+
+
+/* App Setup */
 
 // View Engine Setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
+// Use legacy middlewares
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(favicon(path.join(__dirname, 'public', 'images', 'icons', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// CORS Pre-flight setup for all routes
+app.options('*', cors());
 
 // App Routing
 app.use('/', indexRouter);

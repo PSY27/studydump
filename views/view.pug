@@ -3,10 +3,10 @@ extends layout
 block content
 
 	h3.
-		Document Debug View
+		Document View
 	ul
-		each info, i in display
+		each info, i in view
 			li#info_item
 				p #{info.FileName} of type #{info.FileType} is #{info.Size} KBs and belongs to #{info.Filters.Year} year #{info.Filters.Branch} branch and #{info.Filters.Subject} subject.
-				form(method='POST' action='./delete/'+info._id)
+				form(method='POST' action='./admin/delete/'+info._id)
 					button(type = 'submit' name='url' value=info.DownloadURL) Delete

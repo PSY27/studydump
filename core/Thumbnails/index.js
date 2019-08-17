@@ -5,16 +5,14 @@ const path = require('path');
 
 
 /* Import Utils */
-const debugLog = require('../../utils/DebugLogger');
+const debugLog = require('@utils/DebugLogger');
 
 /* Custom Options */
-const Options = require('../../models/Options');
+const Options = require('@models/Options');
 
 
 /* Custom Variables */
-const storageURL = `https://${process.env.S3_STORAGE_BUCKET_NAME}.s3.${process.env.S3_STORAGE_BUCKET_REGION}.amazonaws.com/`;
-const thumbURL = `${storageURL}thumbs/`;
-const staticThumbURL = `${storageURL}thumbs/static/`;
+const { thumbURL, staticThumbURL } = require('@models/CustomVariables');
 
 
 /* Module Pre-Init */
@@ -39,26 +37,14 @@ const assignThumb = (file) => {
         .then((response) => {
           debugLog.info('Response recieved', response);
           if (response.thumbnail === undefined) {
-            debugLog.info('Assigning respective pseudo thumbnail');
-            const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
-            try {
-              if (Options.supportedThumbs.indexOf(statThumb.split('.')[0]) !== -1) {
-                return resolve({ thumbnail: staticThumbURL + statThumb });
-              }
-              debugLog.info('Couldn\'t find suitable icon. Dropping to default icon');
-              return resolve({ thumbnail: `${staticThumbURL}common.png` });
-            }
-            catch (thumbErr) {
-              debugLog.error('Fatal : Thumbnail process died', thumbErr);
-              return reject(thumbErr);
-            }
+            throw new Error('Can\'t generate thumbnails');
           }
           else {
             return resolve(response);
           }
         })
         .catch((error) => {
-          debugLog.error('Caught an error while creating thumbnails', error);
+          debugLog.error(error);
           debugLog.info('Assigning respective pseudo thumbnail');
           const statThumb = `${path.extname(inFile).toLowerCase().replace('.', '')}.png`;
           try {

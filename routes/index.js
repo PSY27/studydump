@@ -7,31 +7,34 @@ const multerS3 = require('multer-s3');
 
 
 /* Import Core */
-const thumbCore = require('../core/Thumbnails');
+const thumbCore = require('@core/Thumbnails');
 
 
 /* Import Services */
-const auth = require('../services/Authorization');
-const logService = require('../services/LogService');
+const auth = require('@services/Authorization');
+const logService = require('@services/LogService');
+const { pushNotif } = require('@services/FCM');
 
 
 /* Import Utils */
-const nundef = require('../utils/NullUndef');
-const metafetch = require('../utils/MetaManip');
-const debugLog = require('../utils/DebugLogger');
-require('../utils/StringExtensions');
+const nundef = require('@utils/NullUndef');
+const metafetch = require('@utils/MetaManip');
+const debugLog = require('@utils/DebugLogger');
+require('@utils/StringExtensions');
 
 
 /* Custom Options */
-const structURL = require('../models/structure.json');
-const Options = require('../models/Options');
+const structURL = require('@models/structure.json');
+const Options = require('@models/Options');
 
 
 /* Custom Variables */
-const uploadURL = 'uploads/';
-const infoDB = 'info';
-const timestampDB = 'timestamp';
-const logDB = 'act_log';
+const {
+  uploadSuffix,
+  infoDB,
+  timestampDB,
+  logDB
+} = require('@models/CustomVariables');
 
 
 /* Module Pre-Init */
@@ -51,7 +54,7 @@ const storage = multerS3({
   acl: 'public-read',
   key(req, file, cb) {
     const FileName = `${file.originalname.substring(0, file.originalname.lastIndexOf('.')).sanitise().indentFix()}-${Date.now()}${file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length)}`;
-    const UploadPath = uploadURL + FileName;
+    const UploadPath = uploadSuffix + FileName;
     cb(null, UploadPath);
   }
 });
@@ -81,7 +84,7 @@ router.post('/getToken', (req, res) => {
 
     const token = auth.createToken(payload);
     res.status(200).send(token);
-    logService.addLog('Token generated', token, logger);
+    logService.addLog('Token generated', 'General User', token, logger);
   }
   else {
     debugLog.error('Authentication Failure');
@@ -151,7 +154,7 @@ router.get('/getStructure', (req, res) => {
   if (auth.verifyToken(req.get('Authorization'))) {
     debugLog.info('Sending structure');
     res.status(200).json(structURL);
-    logService.addLog('Structure called', auth.resolveToken(req.get('Authorization')), logger);
+    logService.addLog('Structure called', 'General User', auth.resolveToken(req.get('Authorization')), logger);
   }
   else {
     debugLog.error('Authentication Failure');
@@ -177,15 +180,43 @@ router.post('/uploadFile', (req, res) => {
       }
       else {
         return info.find({
-          FileName: req.file.originalname,
-          FileType: req.file.mimetype,
-          Size: req.file.size,
-          Filters: {
-            Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
-            Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-            Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
-          },
-          IsNotif: nundef.checkReturn(req.body.notif, 'false')
+          $or: [
+            {
+              FileName: req.file.originalname,
+              FileType: req.file.mimetype,
+              Size: req.file.size,
+              Filters: {
+                Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
+              },
+              IsNotif: nundef.checkReturn(req.body.notif, 'false')
+            },
+            {
+              FileName: req.file.originalname,
+              FileType: req.file.mimetype,
+              Size: req.file.size,
+              Filters: {
+                Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
+              }
+            },
+            {
+              FileName: req.file.originalname,
+              FileType: req.file.mimetype,
+              Size: req.file.size,
+              IsNotif: nundef.checkReturn(req.body.notif, 'false')
+            },
+            {
+              FileName: req.file.originalname,
+              FileType: req.file.mimetype,
+              Size: req.file.size
+            },
+            {
+              Size: req.file.size
+            }
+          ]
         }).toArray((findErr, result) => {
           if (findErr) {
             debugLog.error('Collection couldn\'t be read', findErr);
@@ -193,11 +224,13 @@ router.post('/uploadFile', (req, res) => {
           }
           else if (result.length) {
             // duplicate check
-            debugLog.warn('\x1b[33m', 'Warning :: Duplicate document found', '\n\r\x1b[0m');
+            debugLog.warn('Duplicate document found');
             res.status(500).send('Duplicate found!');
           }
           else {
             debugLog.info('File uploaded successfully');
+
+            if (nundef.checkReturn(req.body.notif, 'false') === 'true') pushNotif(`${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`, 'A new circular has been uploaded for your branch', 'Tap to view');
 
             thumbCore.assignThumb(req.file).then((thumbObj) => {
               debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
@@ -230,7 +263,7 @@ router.post('/uploadFile', (req, res) => {
                 }
                 else {
                   debugLog.success('Inserted into database');
-                  logService.addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+                  logService.addLog('File uploaded', 'General User', insertResult.ops[0]._id.toString(), logger);
 
                   const timec = Date.now();
 
@@ -241,7 +274,7 @@ router.post('/uploadFile', (req, res) => {
                   };
                   timefeed.Notif = ((req.body.notif) === 'true');
 
-                  timestamp.update(timefeed,
+                  timestamp.updateOne(timefeed,
                     { $set: { Timestamp: timec } },
                     { upsert: true }, (errTime) => {
                       if (err) {
@@ -287,15 +320,43 @@ router.post('/bulkUpload', (req, res) => {
       else {
         return req.files.forEach((doc) => {
           info.find({
-            FileName: doc.originalname,
-            FileType: doc.mimetype,
-            Size: doc.size,
-            Filters: {
-              Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
-              Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-              Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
-            },
-            IsNotif: nundef.checkReturn(req.body.notif, 'false')
+            $or: [
+              {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size,
+                Filters: {
+                  Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                  Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                  Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                },
+                IsNotif: nundef.checkReturn(req.body.notif, 'false')
+              },
+              {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size,
+                Filters: {
+                  Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
+                  Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
+                  Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
+                }
+              },
+              {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size,
+                IsNotif: nundef.checkReturn(req.body.notif, 'false')
+              },
+              {
+                FileName: req.file.originalname,
+                FileType: req.file.mimetype,
+                Size: req.file.size
+              },
+              {
+                Size: req.file.size
+              }
+            ]
           }).toArray((findErr, result) => {
             if (findErr) {
               debugLog.error('Collection couldn\'t be read', findErr);
@@ -308,6 +369,8 @@ router.post('/bulkUpload', (req, res) => {
             }
             else {
               debugLog.success('File uploaded successfully');
+
+              if (nundef.checkReturn(req.body.notif, 'false') === 'true') pushNotif(`${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`, 'A new circular has been uploaded for your branch', 'Tap to view');
 
               thumbCore.assignThumb(req.file).then((thumbObj) => {
                 debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
@@ -340,7 +403,7 @@ router.post('/bulkUpload', (req, res) => {
                   }
                   else {
                     debugLog.success('Inserted into database');
-                    logService.addLog('File uploaded', insertResult.ops[0]._id.toString(), logger);
+                    logService.addLog('File uploaded', 'General User', insertResult.ops[0]._id.toString(), logger);
 
                     const timec = Date.now();
 
@@ -351,7 +414,7 @@ router.post('/bulkUpload', (req, res) => {
                     };
                     timefeed.Notif = ((req.body.notif) === 'true');
 
-                    timestamp.update(timefeed,
+                    timestamp.updateOne(timefeed,
                       { $set: { Timestamp: timec } },
                       { upsert: true }, (errTime) => {
                         if (err) {
@@ -406,7 +469,9 @@ router.get('/listUploads', (req, res) => {
       feed.isAvailable = true;
     }
 
-    logService.addLog('Uploads list sent', auth.resolveToken(req.get('Authorization')), logger);
+    debugLog.debug(feed);
+
+    logService.addLog('Uploads list sent', 'General User', auth.resolveToken(req.get('Authorization')), logger);
 
     const query = info.find(feed).sort({
       'Counts.LikeCount': -1,
@@ -439,7 +504,7 @@ router.get('/listUploads', (req, res) => {
       else if (resultSet.length) {
         res.status(200).send(resultSet);
         resultSet.forEach((doc) => {
-          info.update({ _id: doc._id }, { $inc: { 'Counts.CallCount': 1 } }, (err) => {
+          info.updateMany({ _id: doc._id }, { $inc: { 'Counts.CallCount': 1 } }, (err) => {
             if (err) {
               debugLog.error('Query couldn\'t be executed', err);
             }
@@ -487,7 +552,7 @@ router.post('/updateLike', (req, res) => {
           else if (result.value != null) {
             debugLog.info('Like count updated');
 
-            logService.addLog('Liked document', req.body.id, logger);
+            logService.addLog('Liked document', 'General User', req.body.id, logger);
 
             const timec = Date.now();
 
@@ -499,7 +564,7 @@ router.post('/updateLike', (req, res) => {
 
             timefeed.Notif = ((result.value.notif) === 'true');
 
-            timestamp.update(timefeed,
+            timestamp.updateOne(timefeed,
               { $set: { updatedOn: timec } },
               { upsert: true }, (timeErr) => {
                 if (timeErr) {
@@ -544,7 +609,7 @@ router.get('/download', (req, res) => {
         res.status(500).send(err);
       }
       else {
-        logService.addLog('Downloaded document', auth.resolveToken(req.get('Authorization')), logger);
+        logService.addLog('Downloaded document', 'General User', auth.resolveToken(req.get('Authorization')), logger);
 
         info.findAndModify(
           { DownloadURL: file },
@@ -568,7 +633,7 @@ router.get('/download', (req, res) => {
               };
               timefeed.Notif = ((result.value.IsNotif) === 'true');
 
-              timestamp.update(timefeed,
+              timestamp.updateOne(timefeed,
                 { $set: { Timestamp: timec } },
                 { upsert: true }, (timeErr) => {
                   if (timeErr) {
@@ -626,7 +691,7 @@ router.get('/lastModified', (req, res) => {
       feed.Notif = false;
     }
 
-    logService.addLog('Last modified timestamp', auth.resolveToken(req.get('Authorization')), logger);
+    logService.addLog('Last modified timestamp', 'General User', auth.resolveToken(req.get('Authorization')), logger);
 
     timestamp.find(feed).sort({ Timestamp: -1 }).toArray((err, result) => {
       if (err) {
