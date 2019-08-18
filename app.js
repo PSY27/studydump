@@ -6,8 +6,19 @@ const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-require('dotenv').config({ silent: process.env.NODE_ENV === 'production' });
+const dotenv = require('dotenv');
 require('module-alias/register');
+
+
+/* Module Pre-Init */
+
+// Initializing App
+const app = express();
+
+// Setup dotenv
+if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
 
 /* Import Services */
@@ -24,11 +35,8 @@ const adminRouter = require('@routes/admin');
 const usersRouter = require('@routes/users');
 
 
-/* Module Pre-Init */
+/* Mongo Setup */
 const MongoURL = process.env.MONGO_URL;
-
-// Initializing App
-const app = express();
 
 
 /* CORS Setup */
