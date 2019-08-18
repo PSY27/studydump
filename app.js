@@ -6,7 +6,6 @@ const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv');
 require('module-alias/register');
 
 
@@ -16,9 +15,8 @@ require('module-alias/register');
 const app = express();
 
 // Setup dotenv
-if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
+// eslint-disable-next-line no-unused-expressions
+(!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') ? require('dotenv').config() : '';
 
 
 /* Import Services */
