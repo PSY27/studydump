@@ -17,6 +17,12 @@
 
   - Thumbnailing
 
+  - Change the text and add data field
+
+  - CheckReturn usage in list uploads
+
+  - Change findAndModify in download and like routes
+
 ---
 
 ### For editing deployment variables
