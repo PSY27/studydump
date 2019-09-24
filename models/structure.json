@@ -246,6 +246,79 @@
 						"Software Engineering Lab"
 					]
 				},
+				"Industrial and Production Engineering": {
+					"Subjects": [
+						"Facilities Planning and Design",
+						"Manufacturing Process Engineering",
+						"Metrology and Measurements",
+						"Science and Mechanics of Materials",
+						"Thermal Engineering",
+						"Computer Aided Mechanical Drawing",
+						"Material Testing Lab",
+						"Workshop Practice - I",
+						"Fluid Mechanics and Machinery",
+						"Manufacturing Automation Engineering",
+						"Theory of Machines",
+						"Work Systems Engineering",
+						"Metrology Lab",
+						"Thermo-fluid Lab",
+						"Workshop Practice - II"
+					]
+				},
+				"Print and Media Technology": {
+					"Subjects": [
+						"Basics of Print Media",
+						"Imaging Techniques",
+						"Electronic Composition",
+						"Printing Material Science - I",
+						"Fundamentals of Electronic Media",
+						"Offset Printing",
+						"Printing Material Science - II",
+						"Audio and Video Signals",
+						"Imaging Techniques Lab",
+						"Electronic Composition Lab",
+						"Printing Material Testing Lab",
+						"Audio and Video Signals Lab"
+					]
+				},
+				"Electronics and Instrumentation Engineering": {
+					"Subjects": [
+						"Analog Electronic Circuits",
+						"Digital Electronic Circuits",
+						"Electronic Measurements",
+						"Network Analysis and Signals",
+						"Sensors and Transducers",
+						"Digital System Design",
+						"Industrial Instrumentation",
+						"Linear Control Theory",
+						"Linear Integrated Circuits",
+						"Digital Circuits Lab",
+						"Measurement and Transducers Lab",
+						"Virtual Instrumentation Lab",
+						"Analog Circuits Lab",
+						"Circuit Simulation and HDL Lab",
+						"Instrumentation Lab"
+					]
+				},
+				"Mechatronics": {
+					"Subjects": [
+						"Data Structures and Algorithms",
+						"Digital System Design",
+						"Microcontroller Based System Design",
+						"Robotics - I",
+						"Sensors and Instrumentation",
+						"Microcontroller Lab",
+						"Robotics Lab - I",
+						"Sensors and PLC Lab",
+						"Automated Manufacturing Systems",
+						"Design of Machine Elements",
+						"Linear Control Theory",
+						"Linear Integrated Circuits and Applications",
+						"CAD and Kinematics' Simulation Lab",
+						"Integrated Electronics Lab",
+						"Manufacturing Processes Lab"
+					]
+				},
 				"Common": {
 					"Subjects": [
 						"Engineering Mathematics - III",
@@ -452,6 +525,74 @@
 						"Advanced Technology Lab"
 					]
 				},
+				"Industrial and Production Engineering": {
+					"Subjects": [
+						"Engineering Economics and Financial Management",
+						"Design of Machine Elements",
+						"Operations Research",
+						"Simulation Modeling and Analysis",
+						"Total Quality Management",
+						"Essentials of Management",
+						"Operations and Supply Chain Management",
+						"Tool Engineering and Design",
+						"Automation Engineering Lab",
+						"Operations Research Lab",
+						"Work Systems Engineering Lab",
+						"Operations Management Lab",
+						"Quality Engineering Lab",
+						"Simulation Modeling and Analysis Lab"
+					]
+				},
+				"Print and Media Technology": {
+					"Subjects": [
+						"Flexography, Gravure & Screen Printing",
+						"Digital and Security Printing",
+						"Color Analysis and Reproduction",
+						"Sound Engineering",
+						"Color Analysis and Reproduction Lab",
+						"Essentials of Management",
+						"Print Finishing and Converting",
+						"Video Processing",
+						"Printing Machine Lab",
+						"Sound Engineering Lab",
+						"Print Finishing and Converting Lab",
+						"Video Processing Lab"
+					]
+				},
+				"Electronics and Instrumentation Engineering": {
+					"Subjects": [
+						"Essentials of Management",
+						"Control System Components",
+						"Micro-controllers",
+						"Modern Control Theory",
+						"Process Instrumentation and Control",
+						"Engineering Economics and Financial Management",
+						"Digital Signal Processing",
+						"Industrial Automation",
+						"Micro-controller Lab",
+						"Process Control Lab",
+						"Automation Lab",
+						"Control System Lab",
+						"DSP Lab"
+					]
+				},
+				"Mechatronics": {
+					"Subjects": [
+						"Engineering Economics and Financial Management",
+						"Digital Signal Processing",
+						"Electric Drives",
+						"Hydraulics and Pneumatics Systems",
+						"Theory of Machines",
+						"Essentials of Management",
+						"Automobile Engineering",
+						"Energy and Heat Transfer",
+						"Drives, Controls and Modeling Lab",
+						"Robotics Lab - II",
+						"Hydraulics Lab",
+						"IoT Lab",
+						"Pneumatics Lab"
+					]
+				},
 				"Common": {
 					"Subjects": [
 						"Program Elective",
@@ -515,54 +656,21 @@
 						"Data Analytics Lab"
 					]
 				},
+				"Print and Media Technology": {
+					"Subjects": [
+						"Engineering Economics and Financial Management",
+						"Package Design and Testing",
+						"Media Production",
+						"Animation Technology",
+						"Package Design and Testing Lab",
+						"Animation Technology Lab"
+					]
+				},
 				"Common": {
 					"Subjects": [
 						"Program Elective",
 						"Open Elective"
 					]
-				}
-			}
-		},
-		"Common": {
-			"Branches": {
-				"Aeronautical": {
-					"Subjects": []
-				},
-				"Automobile": {
-					"Subjects": []
-				},
-				"Biomedical": {
-					"Subjects": []
-				},
-				"Biotechnology": {
-					"Subjects": []
-				},
-				"Chemical": {
-					"Subjects": []
-				},
-				"Civil": {
-					"Subjects": []
-				},
-				"CCE": {
-					"Subjects": []
-				},
-				"CSE": {
-					"Subjects": []
-				},
-				"EEE": {
-					"Subjects": []
-				},
-				"ECE": {
-					"Subjects": []
-				},
-				"Mechanical": {
-					"Subjects": []
-				},
-				"IT": {
-					"Subjects": []
-				},
-				"Common": {
-					"Subjects": []
 				}
 			}
 		}
