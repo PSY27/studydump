@@ -6,7 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-require('dotenv').config({ silent: process.env.NODE_ENV === 'production' });
+if(process.env.NODE_ENV !== 'production') require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' });
 require('module-alias/register');
 
 
