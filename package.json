@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
-    "pretest": "eslint .",
-    "test": "npm run pretest"
+    "start": "node ./bin/www",
+    "daemon": "nodemon ./bin/www",
+    "test": "npm run pretest",
+    "pretest": "eslint ."
   },
   "dependencies": {
     "assert": "^2.0.0",
