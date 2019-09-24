@@ -3,7 +3,7 @@ const mongo = require('mongodb');
 
 
 /* Import Utils */
-const debugLog = require('../../utils/DebugLogger');
+const debugLog = require('@utils/DebugLogger');
 
 
 /* Module Pre-Init */
@@ -13,7 +13,10 @@ const { MongoClient } = mongo;
 /* Functions */
 // MongoClient Init
 const init = MongoURL => new Promise((resolve, reject) => {
-  MongoClient.connect(MongoURL, { useNewUrlParser: true }, (err, client) => {
+  MongoClient.connect(MongoURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  }, (err, client) => {
     if (err) {
       debugLog.error('Failed to connect to the database', err);
       return reject(err);

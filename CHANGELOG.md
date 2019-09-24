@@ -4,21 +4,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
 ## [Unreleased]
 ### Added
--   Duplication/spam - OCR???
+- Duplication check
 -	Notifications
+- Search QL
+- Admin dashboard
+- User specific login systems
+- Seamless AWS to local to other transitions
+- Middleware independent core modules
+- Import from drive option
 
 ### Changed
--	Concrete error catching system with throwbacks
--	Defaulting values check
 
 ###	Optional
--	favicon
 -	faculty account
 
+---
 
-## [0.6.0] - 2019-02-02
+## [1.0.0] - *2019-08-20*
+  __Codename: Mikoyan__
+### Added
+- Search feature
+-	Complete functional overhaul
+- New and understandable code segragation
+- More abstract calls/definitions for same routines
+- Added solid eslint/sasslint/mdlint definitions
+- Dedicated logging middleware
+- Added admin panel
+- Added admin authentication/management system
+- Added FCM support
+
+### Changed
+- Updated deprecated functions
+- Isolated static options into easy-configurable files/modules
+- Functions split into functional components
+- Better async control and flow binding
+-	Fixed robust error catching
+- Switched to pug templating engine
+
+### Removed
+- Generic console logs
+- Common global imports
+- Async thread timeout drop
+
+---
+
+## [0.6.0] - *2019-02-02*
 ### Added
 -	Added dislike functionality
 -	Concrete sanitisation and consistency of user queries
@@ -36,8 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 -	Inclusion of system-wide global variables
 
+---
 
-## [0.5.1] - 2019-01-20
+## [0.5.1] - *2019-01-20*
 ### Added
 -	Full thumbnail support
 -	Authorization for download route
@@ -49,8 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+---
 
-## [0.5.0] - 2019-01-15
+## [0.5.0] - *2019-01-15*
 ### Added
 -	Pagination
 -	Concrete http return codes
@@ -71,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+---
 
 <!---
 [Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD

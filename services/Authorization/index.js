@@ -3,17 +3,14 @@ const jwt = require('jsonwebtoken');
 
 
 /* Import Utils */
-const debugLog = require('../../utils/DebugLogger');
-
-
-/* Custom Options */
-const Options = require('../../models/Options');
+const debugLog = require('@utils/DebugLogger');
 
 
 /* Module Pre-Init */
 const JWTPrivateKEY = process.env.JWT_PRIVATE_KEY;
 const JWTPublicKEY = process.env.JWT_PUBLIC_KEY;
 const JWTSignOptions = JSON.parse(process.env.JWT_SIGN_OPTIONS);
+
 
 /* Functions */
 
@@ -31,12 +28,6 @@ const resolveToken = (feed) => {
   }
   return feed;
 };
-
-// High Auth Check
-const checkHighAuth = () => true;
-/* Elaborate Here */
-
-/* -------------- */
 
 // Authenticate JWT
 const verifyToken = (feedToken) => {
@@ -66,6 +57,14 @@ const verifyToken = (feedToken) => {
     return false;
   }
 };
+
+// High Auth Check
+const checkHighAuth = () => true;
+/* Elaborate Here */
+
+/* -------------- */
+
+// Admin Login
 
 
 /* Module Exports */

@@ -1,133 +1,130 @@
 /* Legacy Modules */
 const express = require('express');
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
+const aws = require('aws-sdk');
 const mongodb = require('mongodb');
 
 
-/* Custom Options */
-const structURL = require('../models/structure.json');
-const Options = require('../models/Options');
+/* Import Services */
+const auth = require('@services/Authorization');
+const logService = require('@services/LogService');
+
+/* Import Utils */
+const debugLog = require('@utils/DebugLogger');
 
 
 /* Custom Variables */
-const infoDB = 'info';      // Fix
-const privateKEY = process.env.PRIVATE_KEY;
-const publicKEY = process.env.PUBLIC_KEY;
+const {
+  uploadSuffix,
+  infoDB,
+  logDB
+} = require('@models/CustomVariables');
 
 
 /* Module Pre-Init */
 const router = express.Router();
+const s3 = new aws.S3();
 
 
 /* Routes */
 
-// Index Route
-router.get('/', (req, res) => {
-  res.render('index', { title: 'Admin Panel' });
-});
-
-// Token Creation
-router.post('/getToken', (req, res) => {
-  const payload = {
-    name: req.body.name,
-    userid: req.body.userid
-  };
-
-  const token = jwt.sign(payload, privateKEY, Options.signOptions);
-  logger.info('Token : ', token);
-  res.send(token);
-});
-
-// Admin Token Creation
-router.post('/getToken', (req, res) => {
-  const payload = {
-    name: req.body.name,
-    userid: req.body.userid
-  };
-
-  const token = jwt.sign(payload, privateKEY, Options.signOptions);
-  res.send(token);
-});
-
-
-// Verifying Token
+// Verify JWT
 router.get('/verifyToken', (req, res) => {
-  jwt.verify(req.get('Authorization').split(' ')[1], publicKEY, Options.signOptions, (err) => {
-    if (err) {
-      logger.info('JWT verification result: ');
-      res.send('NAH');
-    }
-    else {
-      console.log('\nJWT verification result: ');
-      res.send('OK');
-    }
-  });
+  const logger = req.app.get('db').collection(logDB);
+
+  logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+
+  if (auth.verifyToken(req.get('Authorization'))) {
+    debugLog.info('JWT is valid');
+    res.status(200).send('Valid');
+  }
+  else {
+    debugLog.info('JWT is invalid');
+    res.ststus(200).send('Invalid');
+  }
 });
 
-// View Documents Route
+// Login View
+router.get('/login', (req, res) => {
+  res.render('login');
+});
+
+// Landing View
+router.get('/', (req, res) => {
+  res.render('index');
+});
+
+// Document List View
 router.get('/view', (req, res) => {
-  if (true) {
+  if (auth.checkHighAuth()) {
     const info = req.app.get('db').collection(infoDB);
 
     info.find({}).sort({ 'Counts.DownloadCount': -1, 'Counts.CallCount': -1, _id: 1 }).toArray((err, result) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: Can\'t run query\n\r', err, '\x1b[0m');
+        debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
       else if (result.length) {
-        res.render('display', {
-          display: result
+        res.render('view', {
+          view: result
         });
       }
       else {
-        console.log('\x1b[36m', 'Info :: No documents found\n\r', '\x1b[0m');
+        debugLog.info('No documents found');
         res.status(200).send('No documents found');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
-// Delete Documents Route
+// Document Delete Route
 router.post('/delete/:id', (req, res) => {
-  if (true) {
+  const info = req.app.get('db').collection(infoDB);
+  const logger = req.app.get('db').collection(logDB);
 
-    const info = req.app.get('db').collection(infoDB);
-
-    info.deleteOne({ _id: new mongodb.ObjectId(req.params.id) }, (err) => {
+  if (auth.checkHighAuth()) {
+    info.findOneAndDelete({ _id: new mongodb.ObjectId(req.params.id) }, (err, doc) => {
       if (err) {
-        console.log('\x1b[31m', 'Error :: Can\'t run query\n\r', err, '\x1b[0m');
+        debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
       else {
-        console.log('\x1b[36m', 'Info :: Removed document from database\n\r', '\x1b[0m');
-        fs.access(req.body.url, (fsErr) => {
-          if (fsErr) {
-            console.log('\x1b[31m', 'Error :: No url supplied\n\r', fsErr, '\x1b[0m');
+        debugLog.info('Removed document from database');
+
+        logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+
+        s3.deleteObject({ Bucket: process.env.S3_STORAGE_BUCKET_NAME, Key: uploadSuffix + doc.value.DownloadURL.replace(/^.+\//g, '') }, (delerr) => {
+          if (delerr) {
+            debugLog.error('Error occured in deleting from bucket. Try manually removing the object', delerr);
+            res.status(500).send(delerr);
           }
           else {
-            fs.unlink(req.body.url, (unFsErr) => {
-              if (unFsErr) {
-                console.log('\x1b[36m', 'Error :: Couldn\'t delete the file\n\r', unFsErr, '\x1b[0m');
-              }
-              else {
-                console.log('\x1b[36m', 'Info :: Deleted file from server\n\r', '\x1b[0m');
-              }
-            });
+            debugLog.success('Deleted file : ', doc.value.DownloadURL.replace(/^.+\//g, ''));
           }
         });
-        res.redirect('../view');
+        res.redirect('@views/view');
       }
     });
   }
   else {
-    console.log('\x1b[31m', 'Error :: Authentication Failure', '\x1b[0m');
+    debugLog.error('Authentication Failure');
     res.status(401).send('Couldn\'t authenticate connection');
   }
 });
 
+// Login Controller
+router.post('/login', (req, res) => {
+  const info = req.app.get('db').collection(infoDB);
+
+  info.find({
+    email: req.body.email,
+    password: req.body.password
+  });
+});
+
+
+/* Module Exports */
 module.exports = router;

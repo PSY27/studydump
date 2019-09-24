@@ -1,12 +1,11 @@
 core
-  Thumbnail
-    - create
-    - @ref/getThumbLoc
-    - @ref/getStatThumbName
-
   Duplicates
     - checkDuplicate
-    - regression
+    ...
+
+  Thumbnail
+    - assignThumb
+    ...
 
 routes
   - admin
@@ -14,21 +13,21 @@ routes
   - users
 
 scripts
-  - automaton
+  - deploy.sh
+  ...
 
 services
   MongoService
     - init
-    - getDB
 
   Authorization
     - createToken
-    - extractToken
+    - resolveToken
+    - checkHighAuth
     - verifyToken
     - checkHighAuth
 
   LogService
-    - debugLogger
     - addLog
 
 utils
@@ -42,17 +41,25 @@ utils
     - checkReturn
 
   QueryExtension
-    - Paginate
+    - QL(TBD)
+    ...
 
   MetaManip
-    - addTimestamp
-    - removeTimestamp
-    - getThumbName
-    - getStatThumbName
+    - getFileName
+    - addTimestamp(TBD)
+    - removeTimestamp(TBD)
+    - getThumbName(TBD)
+    - getStatThumbName(TBD)
 
-  RetrieveOpts
-    - isTypeSupported
+  DebugLogger
+    - error
+    - success
+    - warn
+    - debug
+    - info
+    - waypoint
 
-Model
-  getUploadFormat
-  getCheckFormat
+models
+  CustomVariables
+  Options
+  structure

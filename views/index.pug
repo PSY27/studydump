@@ -1,0 +1,13 @@
+extends layout
+
+block content
+
+  h1 Admin Console
+  p Welcome to StudyDump admin console
+  button.btn.btn-primary(type='submit', onclick='move();') Log in
+
+block script
+  script.
+    function move() {
+      window.location.href = 'admin/login';
+    }

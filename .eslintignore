@@ -21,6 +21,9 @@ coverage
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
+# Executed www
+bin
+
 # Dependency directories
 node_modules
 jspm_packages
@@ -45,11 +48,8 @@ locks
 .env
 .env.test
 
-# History kernels
-Kernel
-
-# Meta listings
-TaskList
+# Programming meta
+meta
 CHANGELOG.md
 README.md
 
