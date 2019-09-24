@@ -15,10 +15,10 @@ const addLog = (action, clearance, desc, db) => {
 
   db.insertOne(feed, (err) => {
     if (err) {
-      debugLog.error('Can\'t insert into database', err);
+      debugLog.error('Can\'t add activity in logger database', err);
     }
     else {
-      debugLog.success('Inserted into database');
+      debugLog.success('Inserted into logs');
     }
   });
 };

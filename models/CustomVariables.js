@@ -14,6 +14,10 @@ const timestampDB = process.env.TIMESTAMP_DB;
 const logDB = process.env.LOG_DB;
 
 
+/* Frontend Version */
+const appVersion = process.env.FRONTEND_VERSION;
+
+
 /* Module Exports */
 module.exports = {
   uploadSuffix,
@@ -21,5 +25,6 @@ module.exports = {
   staticThumbURL,
   infoDB,
   timestampDB,
-  logDB
+  logDB,
+  appVersion
 };

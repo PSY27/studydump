@@ -33,7 +33,8 @@ const {
   uploadSuffix,
   infoDB,
   timestampDB,
-  logDB
+  logDB,
+  appVersion
 } = require('@models/CustomVariables');
 
 
@@ -140,6 +141,21 @@ router.get('/search', (req, res) => {
         res.status(200).send('No upload found');
       }
     });
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).send('Couldn\'t authenticate connection');
+  }
+});
+
+// Current App Version Return
+router.get('/getVersion', (req, res) => {
+  const logger = req.app.get('db').collection(logDB);
+
+  if (auth.verifyToken(req.get('Authorization'))) {
+    debugLog.info('Sending version');
+    res.status(200).send(appVersion);
+    logService.addLog('Version sent', 'General User', req.query.appVersion + '->' + appVersion, logger);
   }
   else {
     debugLog.error('Authentication Failure');
