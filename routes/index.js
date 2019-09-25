@@ -241,7 +241,7 @@ router.post('/uploadFile', (req, res) => {
           else if (result.length) {
             // duplicate check
             debugLog.warn('Duplicate document found');
-            res.status(500).send('Duplicate found!');
+            res.status(500).send(result[0].Filters);
           }
           else {
             debugLog.info('File uploaded successfully');
@@ -381,7 +381,7 @@ router.post('/bulkUpload', (req, res) => {
             else if (result.length) {
               // duplicate check
               debugLog.warn('Duplicate document found');
-              res.status(500).send('Duplicate found!');
+              res.status(500).send(result[0].Filters);
             }
             else {
               debugLog.success('File uploaded successfully');
