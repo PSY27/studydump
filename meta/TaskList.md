@@ -1,68 +1,59 @@
-#	Study Dump API
+# Study Dump API
 
-### To-Do
+## To-Do
 
-  - Add path utils and abstraction in general
+-   Add parameter existence checks
 
-  - Add parameter existence checks
+-   Add basic login based session for admin
 
-  - Add basic login based session for admin
-    - Add checkHighAuth
+    -   Add checkHighAuth
 
-  - Create evaluation tests
+-   Create evaluation tests
 
-  - Shift detect duplicate core to its location
+-   Shift detect duplicate core to its location
 
-  - Spam filter
+-   Spam filter
 
-  - Thumbnailing
+-   Explicit Filter
 
----
-
-### For editing deployment variables
-
-  - Edit .env
-
-  - Edit models/
-
----
+-   Thumbnailing
 
 Tasklist to remember during later stages of development
 
-### For Server Deployment
+## For Server Deployment
 
-  -	favicon
+-   favicon
 
-  -	robots
+-   robots
 
-  -	.htaccess
+-   .htaccess
 
-  -	Server autoDB script
+-   Server autoDB script
 
-  -	Server-side isAvailable routine check
+-   Server-side isAvailable routine check
 
-  -	Convert debug route to server side script
+-   Convert debug route to server side script
 
-  -	Server-side purge scripts for action-logging
+-   Server-side purge scripts for action-logging
 
-  -	Make server side scripts for management
+-   Make server side scripts for management
 
-  -	Store public n private keys in venv vars (ssh-keygen)
+-   Store public n private keys in venv vars (ssh-keygen)
 
-  -	Blacklist IPs trying multiple times to create jwt
+-   Blacklist IPs trying multiple times to create jwt
 
-  -	Security and stress check
+-   Security and stress check
 
-  -	Server support for GraphicsMagick (images)
+-   Server support for GraphicsMagick (images)
 
-  -	Server support for ghostscript (pdfs)
+-   Server support for ghostscript (pdfs)
 
-  -	Server support for ffmpeg (videos)
+-   Server support for ffmpeg (videos)
 
-  -	Server support for unoconv/libreoffice (pdf)
+-   Server support for unoconv/libreoffice (pdf)
 
-  - Duplicate check
+-   Duplicate check
 
-  - Check spam
+-   Check spam
 
-  - Create thumbnails
+-   Create thumbnails

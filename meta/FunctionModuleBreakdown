@@ -1,65 +1,195 @@
-core
-  Duplicates
-    - checkDuplicate
-    ...
-
-  Thumbnail
-    - assignThumb
-    ...
-
-routes
-  - admin
-  - index
-  - users
-
-scripts
-  - deploy.sh
-  ...
-
-services
-  MongoService
-    - init
-
-  Authorization
-    - createToken
-    - resolveToken
-    - checkHighAuth
-    - verifyToken
-    - checkHighAuth
-
-  LogService
-    - addLog
-
-utils
-  StringExtensions
-    - sanitise
-    - toNum
-    - stringFix
-    - indentFix
-
-  NullUndefFix
-    - checkReturn
-
-  QueryExtension
-    - QL(TBD)
-    ...
-
-  MetaManip
-    - getFileName
-    - addTimestamp(TBD)
-    - removeTimestamp(TBD)
-    - getThumbName(TBD)
-    - getStatThumbName(TBD)
-
-  DebugLogger
-    - error
-    - success
-    - warn
-    - debug
-    - info
-    - waypoint
-
-models
-  CustomVariables
-  Options
-  structure
+src
+|
++-- bin
+|  |
+|  \-- www
+|
++-- core
+|  |
+|  +-- Duplicates
+|  |  |
+|  |  \-- index
+|  |
+|  \-- Thumbnails
+|     |
+|     \-- <assignThumb>
+|
++-- meta
+|  |
+|  +-- FunctionModuleBreakdown
+|  |
+|  \-- Tasklist
+|
++-- models
+|  |
+|  +-- CustomVariables
+|  |
+|  +-- Options
+|  |
+|  \-- structure.json
+|
++-- node_modules
+|  |
+|  \-- (modules)
+|
++-- public
+|  |
+|  +-- images
+|  |  |
+|  |  +-- icons
+|  |     |
+|  |     +-- (icons...)
+|  |     |
+|  |     \-- favicon
+|  |
+|  \-- stylesheets
+|     |
+|     \-- (css files...)
+|
++-- routes
+|  |
+|  +-- admin
+|  |  |
+|  |  +-- <verifyToken>
+|  |  |
+|  |  +-- <login>
+|  |  |
+|  |  +-- <index>
+|  |  |
+|  |  +-- <view>
+|  |  |
+|  |  \-- <delete>
+|  |
+|  +-- index
+|  |  |
+|  |  +-- <getToken>
+|  |  |
+|  |  +-- <search>
+|  |  |
+|  |  +-- <getVersion>
+|  |  |
+|  |  +-- <getStructure>
+|  |  |
+|  |  +-- <uploadFile>
+|  |  |
+|  |  +-- <bulkUpload>
+|  |  |
+|  |  +-- <listUploads>
+|  |  |
+|  |  +-- <updateLike>
+|  |  |
+|  |  +-- <download>
+|  |  |
+|  |  \-- <lastModified>
+|  |
+|  \-- users
+|     |
+|     \-- <serve>
+|
++-- scripts
+|  |
+|  +-- deploy.sh
+|  |
+|  +-- (database backups...)
+|  |
+|  +-- (business analytics...)
+|  |
+|  \-- (more automaton scripts...)
+|
++-- services
+|  |
+|  +-- Authorization
+|  |  |
+|  |  +-- <createToken>
+|  |  |
+|  |  +-- <resolveToken>
+|  |  |
+|  |  +-- <verifyToken>
+|  |  |
+|  |  \-- <checkHighAuth>
+|  |
+|  +-- FCM
+|  |  |
+|  |  \-- <pushNotif>
+|  |
+|  +-- LogService
+|  |  |
+|  |  \-- <addLog>
+|  |
+|  \-- MongoService
+|     |
+|     \-- <init>
+|
++-- tests
+|  |
+|  +-- (chaitests...)
+|  |
+|  \-- (postman...)
+|
++-- utils
+|  |
+|  +-- DebugLogger
+|  |  |
+|  |  +-- <isDebugAllowed>
+|  |  |
+|  |  +-- <error>
+|  |  |
+|  |  +-- <success>
+|  |  |
+|  |  +-- <warn>
+|  |  |
+|  |  +-- <debug>
+|  |  |
+|  |  +-- <info>
+|  |  |
+|  |  \-- <waypoint>
+|  |
+|  +-- MetaManip
+|  |  |
+|  |  \-- <getFileName>
+|  |
+|  +-- NullUndef
+|  |  |
+|  |  \-- <checkReturn>
+|  |
+|  +-- QueryExtension
+|  |  |
+|  |  \-- (Query functions...)
+|  |
+|  \-- StringExtensions
+|     |
+|     +-- <sanitise>
+|     |
+|     +-- <toNum>
+|     |
+|     +-- <stringFix>
+|     |
+|     \-- <indentFix>
+|
++-- views
+|  |
+|  +-- layout
+|  |
+|  +-- index
+|  |
+|  +-- login
+|  |
+|  +-- view
+|  |
+|  \-- error
+|
++-- app
+|
++-- package.json
+|
++-- README
+|
++-- CHANGELOG
+|
++-- .env
+|
++-- .gitignore
+|
++-- .eslintignore
+|
++-- .eslintrc

@@ -59,12 +59,16 @@ const verifyToken = (feedToken) => {
 };
 
 // High Auth Check
-const checkHighAuth = () => true;
-/* Elaborate Here */
+const checkHighAuth = (req) => {
+  var cookie = req.signedCookies.authCert;
+  if (cookie === undefined) {
+    debugLog.info('No valid cookie exists');
+    return false;
+  }
 
-/* -------------- */
-
-// Admin Login
+  debugLog.info('Cookie found!', cookie);
+  return true;
+};
 
 
 /* Module Exports */

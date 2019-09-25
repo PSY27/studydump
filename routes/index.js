@@ -77,7 +77,7 @@ const bulk = multer({
 router.post('/getToken', (req, res) => {
   const logger = req.app.get('db').collection(logDB);
 
-  if (auth.checkHighAuth()) {
+  if (auth.checkHighAuth(req)) {
     const payload = {
       name: req.body.name.sanitise(),
       email: req.body.email.sanitise()
@@ -155,7 +155,7 @@ router.get('/getVersion', (req, res) => {
   if (auth.verifyToken(req.get('Authorization'))) {
     debugLog.info('Sending version');
     res.status(200).send(appVersion);
-    logService.addLog('Version sent', 'General User', req.query.appVersion + '->' + appVersion, logger);
+    logService.addLog('Version sent', 'General User', `${req.query.appVersion}->${appVersion}`, logger);
   }
   else {
     debugLog.error('Authentication Failure');

@@ -6,7 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-if(process.env.NODE_ENV !== 'production') require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' });
+if (process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' });
 require('module-alias/register');
 
 
@@ -56,7 +56,7 @@ app.set('view engine', 'pug');
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(favicon(path.join(__dirname, 'public', 'images', 'icons', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
 

@@ -12,11 +12,16 @@ const logService = require('@services/LogService');
 const debugLog = require('@utils/DebugLogger');
 
 
+/* Custom Options */
+const Options = require('@models/Options');
+
+
 /* Custom Variables */
 const {
   uploadSuffix,
   infoDB,
-  logDB
+  logDB,
+  adminCreds
 } = require('@models/CustomVariables');
 
 
@@ -29,17 +34,23 @@ const s3 = new aws.S3();
 
 // Verify JWT
 router.get('/verifyToken', (req, res) => {
-  const logger = req.app.get('db').collection(logDB);
+  if (auth.checkHighAuth(req)) {
+    const logger = req.app.get('db').collection(logDB);
 
-  logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+    logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
 
-  if (auth.verifyToken(req.get('Authorization'))) {
-    debugLog.info('JWT is valid');
-    res.status(200).send('Valid');
+    if (auth.verifyToken(req.get('Authorization'))) {
+      debugLog.info('JWT is valid');
+      res.status(200).send('Valid');
+    }
+    else {
+      debugLog.info('JWT is invalid');
+      res.status(200).send('Invalid');
+    }
   }
   else {
-    debugLog.info('JWT is invalid');
-    res.ststus(200).send('Invalid');
+    debugLog.error('Authentication Failure');
+    res.status(403).redirect('login');
   }
 });
 
@@ -55,7 +66,7 @@ router.get('/', (req, res) => {
 
 // Document List View
 router.get('/view', (req, res) => {
-  if (auth.checkHighAuth()) {
+  if (auth.checkHighAuth(req)) {
     const info = req.app.get('db').collection(infoDB);
 
     info.find({}).sort({ 'Counts.DownloadCount': -1, 'Counts.CallCount': -1, _id: 1 }).toArray((err, result) => {
@@ -76,7 +87,7 @@ router.get('/view', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).send('Couldn\'t authenticate connection');
+    res.status(403).redirect('login');
   }
 });
 
@@ -85,7 +96,7 @@ router.post('/delete/:id', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (auth.checkHighAuth()) {
+  if (auth.checkHighAuth(req)) {
     info.findOneAndDelete({ _id: new mongodb.ObjectId(req.params.id) }, (err, doc) => {
       if (err) {
         debugLog.error('Can\'t run query', err);
@@ -105,24 +116,38 @@ router.post('/delete/:id', (req, res) => {
             debugLog.success('Deleted file : ', doc.value.DownloadURL.replace(/^.+\//g, ''));
           }
         });
-        res.redirect('@views/view');
+        res.redirect('../view');
       }
     });
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).send('Couldn\'t authenticate connection');
+    res.status(403).redirect('login');
   }
 });
 
 // Login Controller
 router.post('/login', (req, res) => {
-  const info = req.app.get('db').collection(infoDB);
+  const logger = req.app.get('db').collection(logDB);
 
-  info.find({
-    email: req.body.email,
-    password: req.body.password
-  });
+  if (req.body.userid !== undefined && req.body.password !== undefined) {
+    const expectUser = adminCreds.filter(cred => cred.UserId === req.body.userid);
+
+    if (expectUser[0] !== undefined && expectUser[0].Password === req.body.password) {
+      res.cookie('authCert', 'value', Options.cookieOptions).redirect('view');
+      logService.addLog('Admin Login', 'Admin', req.body.userid, logger);
+    }
+    else {
+      res.render('login', {
+        message: 'Invalid Credentials'
+      });
+    }
+  }
+  else {
+    res.render('login', {
+      message: 'Required Fields Left Unfilled'
+    });
+  }
 });
 
 

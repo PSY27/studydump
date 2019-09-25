@@ -16,6 +16,6 @@ String.prototype.stringFix = function stringFix() {
 };
 
 // Replace Indents in Input
-String.prototype.indentFix = function indexFix(rep = '_') {
+String.prototype.indentFix = function indentFix(rep = '_') {
   return this.replace(/\s/g, rep).toString();
 };

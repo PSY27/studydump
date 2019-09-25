@@ -6,7 +6,7 @@
     "start": "node ./bin/www",
     "daemon": "nodemon ./bin/www",
     "test": "npm run pretest",
-    "pretest": "eslint ."
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "assert": "^2.0.0",

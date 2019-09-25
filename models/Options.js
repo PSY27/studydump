@@ -10,6 +10,11 @@ module.exports = {
   fileLimit: {
     fileSize: 1024 * 1024 * 1000
   },
+  cookieOptions: {
+    maxAge: 1000 * 60 * 15,
+    httpOnly: true,
+    signed: true
+  },
   supportedThumbs: [
     '3ds',
     '7zip',
