@@ -77,20 +77,14 @@ const bulk = multer({
 router.post('/getToken', (req, res) => {
   const logger = req.app.get('db').collection(logDB);
 
-  if (auth.checkHighAuth(req)) {
-    const payload = {
-      name: req.body.name.sanitise(),
-      email: req.body.email.sanitise()
-    };
+  const payload = {
+    name: req.body.name.sanitise(),
+    email: req.body.email.sanitise()
+  };
 
-    const token = auth.createToken(payload);
-    res.status(200).send(token);
-    logService.addLog('Token generated', 'General User', token, logger);
-  }
-  else {
-    debugLog.error('Authentication Failure');
-    res.status(401).send('Couldn\'t authenticate connection');
-  }
+  const token = auth.createToken(payload);
+  res.status(200).send(token);
+  logService.addLog('Token generated', 'General User', token, logger);
 });
 
 // Search Document Route
