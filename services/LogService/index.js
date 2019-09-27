@@ -1,5 +1,5 @@
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 
 /* Functions */

@@ -3,7 +3,7 @@ const mongo = require('mongodb');
 
 
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 
 /* Module Pre-Init */

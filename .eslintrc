@@ -4,6 +4,16 @@
     "es6": true,
     "browser": true
   },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "moduleDirectory": [
+          "node_modules",
+          .
+        ]
+      }
+    }
+  },
   "rules": {
     "brace-style": [
         "error",
@@ -37,8 +47,16 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": ["app.js", "**/*.test.ts", "**/*.test.tsx"]
+        "devDependencies": ["app.js", "**/*.test.js", "**/*.test.ts", "**/*.test.tsx"]
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.test.js", "*.spec.js"],
+      "rules": {
+        "no-unused-expressions": "off"
+      }
+    }
+  ]
 }

@@ -5,15 +5,15 @@ const mongodb = require('mongodb');
 
 
 /* Import Services */
-const auth = require('@services/Authorization');
-const logService = require('@services/LogService');
+const auth = require('services/Authorization');
+const logService = require('services/LogService');
 
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 
 /* Custom Options */
-const Options = require('@models/Options');
+const Options = require('models/Options');
 
 
 /* Custom Variables */
@@ -22,7 +22,7 @@ const {
   infoDB,
   logDB,
   adminCreds
-} = require('@models/CustomVariables');
+} = require('models/CustomVariables');
 
 
 /* Module Pre-Init */

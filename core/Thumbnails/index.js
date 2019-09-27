@@ -5,14 +5,14 @@ const path = require('path');
 
 
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 /* Custom Options */
-const Options = require('@models/Options');
+const Options = require('models/Options');
 
 
 /* Custom Variables */
-const { thumbURL, staticThumbURL } = require('@models/CustomVariables');
+const { thumbURL, staticThumbURL } = require('models/CustomVariables');
 
 
 /* Module Pre-Init */

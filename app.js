@@ -1,3 +1,7 @@
+/* Global Folder Aliasing */
+require('app-module-path').addPath(`${__dirname}`);
+
+
 /* Legacy Modules */
 const createError = require('http-errors');
 const express = require('express');
@@ -6,22 +10,23 @@ const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
+
 if (process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' });
 require('module-alias/register');
 
 
 /* Import Services */
-const mongoService = require('@services/MongoService');
+const mongoService = require('services/MongoService');
 
 
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 
 /* Import Routes */
-const indexRouter = require('@routes/index');
-const adminRouter = require('@routes/admin');
-const usersRouter = require('@routes/users');
+const indexRouter = require('routes/index');
+const adminRouter = require('routes/admin');
+const usersRouter = require('routes/users');
 
 
 /* Module Pre-Init */

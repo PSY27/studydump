@@ -3,7 +3,7 @@ const FCM = require('fcm-push');
 
 
 /* Import Utils */
-const debugLog = require('@utils/DebugLogger');
+const debugLog = require('utils/DebugLogger');
 
 
 /* Messaging Setup */

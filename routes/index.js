@@ -7,25 +7,25 @@ const multerS3 = require('multer-s3');
 
 
 /* Import Core */
-const thumbCore = require('@core/Thumbnails');
+const thumbCore = require('core/Thumbnails');
 
 
 /* Import Services */
-const auth = require('@services/Authorization');
-const logService = require('@services/LogService');
-const { pushNotif } = require('@services/FCM');
+const auth = require('services/Authorization');
+const logService = require('services/LogService');
+const { pushNotif } = require('services/FCM');
 
 
 /* Import Utils */
-const nundef = require('@utils/NullUndef');
-const metafetch = require('@utils/MetaManip');
-const debugLog = require('@utils/DebugLogger');
-require('@utils/StringExtensions');
+const nundef = require('utils/NullUndef');
+const metafetch = require('utils/MetaManip');
+const debugLog = require('utils/DebugLogger');
+require('utils/StringExtensions');
 
 
 /* Custom Options */
-const structURL = require('@models/structure.json');
-const Options = require('@models/Options');
+const structURL = require('models/structure.json');
+const Options = require('models/Options');
 
 
 /* Custom Variables */
@@ -33,9 +33,8 @@ const {
   uploadSuffix,
   infoDB,
   timestampDB,
-  logDB,
-  appVersion
-} = require('@models/CustomVariables');
+  logDB
+} = require('models/CustomVariables');
 
 
 /* Module Pre-Init */
