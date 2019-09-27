@@ -106,6 +106,9 @@ router.get('/search', (req, res) => {
     if (req.query.subject) {
       feed['Filters.Subject'] = req.query.subject.sanitise().stringFix();
     }
+    if (req.query.available !== false) {
+      feed.isAvailable = true;
+    }
 
     info.find(
       {
@@ -113,13 +116,19 @@ router.get('/search', (req, res) => {
           feed,
           {
             $or: [
-              { FileName: { $in: regex } },
-              { FileType: { $in: regex } }
+              { FileName: { $in: regex } }
             ]
           }
         ]
       }
-    ).toArray((err, result) => {
+    ).sort({
+      FileName: 1,
+      'Counts.LikeCount': -1,
+      'Counts.DownloadCount': -1,
+      Size: -1,
+      'Counts.CallCount': -1,
+      _id: -1
+    }).toArray((err, result) => {
       if (err) {
         debugLog.error('Collection couldn\'t be read', err);
         res.status(500).send(err);
@@ -216,14 +225,6 @@ router.post('/uploadFile', (req, res) => {
               FileType: req.file.mimetype,
               Size: req.file.size,
               IsNotif: nundef.checkReturn(req.body.notif, 'false')
-            },
-            {
-              FileName: req.file.originalname,
-              FileType: req.file.mimetype,
-              Size: req.file.size
-            },
-            {
-              Size: req.file.size
             }
           ]
         }).toArray((findErr, result) => {
@@ -356,14 +357,6 @@ router.post('/bulkUpload', (req, res) => {
                 FileType: req.file.mimetype,
                 Size: req.file.size,
                 IsNotif: nundef.checkReturn(req.body.notif, 'false')
-              },
-              {
-                FileName: req.file.originalname,
-                FileType: req.file.mimetype,
-                Size: req.file.size
-              },
-              {
-                Size: req.file.size
               }
             ]
           }).toArray((findErr, result) => {
