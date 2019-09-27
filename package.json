@@ -5,8 +5,9 @@
   "scripts": {
     "start": "node ./bin/www",
     "daemon": "nodemon ./bin/www",
-    "test": "npm run lint",
-    "lint": "eslint . --fix"
+    "test": "npm run lint && npm run modetest",
+    "lint": "eslint . --fix",
+    "modtest": "mocha test/runner.test.js"
   },
   "dependencies": {
     "acorn": "^7.1.0",
