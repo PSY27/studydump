@@ -11,8 +11,7 @@ const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 
-if (process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' });
-require('module-alias/register');
+(process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') ? require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' }) : {}; // eslint-disable-line no-unused-expressions
 
 
 /* Import Services */
