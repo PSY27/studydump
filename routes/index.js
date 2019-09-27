@@ -147,8 +147,8 @@ router.get('/getVersion', (req, res) => {
 
   if (auth.verifyToken(req.get('Authorization'))) {
     debugLog.info('Sending version');
-    res.status(200).send(appVersion);
-    logService.addLog('Version sent', 'General User', `${req.query.appVersion}->${appVersion}`, logger);
+    res.status(200).send(process.env.FRONTEND_VERSION);
+    logService.addLog('Version sent', 'General User', `${req.query.appVersion}->${process.env.FRONTEND_VERSION}`, logger);
   }
   else {
     debugLog.error('Authentication Failure');
@@ -713,7 +713,7 @@ router.get('/lastModified', (req, res) => {
       }
       else {
         debugLog.info('Timestamp does not exist');
-        res.status(400).send('0');
+        res.status(200).send('0');
       }
     });
   }

@@ -50,7 +50,7 @@ router.get('/verifyToken', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(403).redirect('login');
+    res.status(401).redirect('login');
   }
 });
 
@@ -87,7 +87,7 @@ router.get('/view', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(403).redirect('login');
+    res.status(401).redirect('login');
   }
 });
 
@@ -101,6 +101,9 @@ router.post('/delete/:id', (req, res) => {
       if (err) {
         debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
+      }
+      else if (!doc.value) {
+        debugLog.error('Detected Multiclick', 'Ignoring multi-deletes');
       }
       else {
         debugLog.info('Removed document from database');
@@ -122,7 +125,7 @@ router.post('/delete/:id', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(403).redirect('login');
+    res.status(401).redirect('login');
   }
 });
 

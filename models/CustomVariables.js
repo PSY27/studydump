@@ -17,9 +17,6 @@ const logDB = process.env.LOG_DB;
 /* Admin Credentials */
 const adminCreds = JSON.parse(process.env.ADMIN_CREDENTIALS);
 
-/* Frontend Version */
-const appVersion = process.env.FRONTEND_VERSION;
-
 
 /* Module Exports */
 module.exports = {
@@ -29,6 +26,5 @@ module.exports = {
   infoDB,
   timestampDB,
   logDB,
-  adminCreds,
-  appVersion
+  adminCreds
 };
