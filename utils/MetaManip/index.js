@@ -1,7 +1,10 @@
 /* Functions */
 
 // Get FileName from Path
-const getFileName = filePath => filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
+const getFileName = (filePath) => {
+  if (typeof (filePath) === 'string') return filePath.replace(/.*\//, '').replace(/-(?!.*-).*?(?=\.)/, '');
+  return undefined;
+};
 // [^\/]+(?=\-)|(?=\.).*    to get name without timestamp with extention
 
 
