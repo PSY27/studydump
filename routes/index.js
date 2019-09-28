@@ -209,22 +209,6 @@ router.post('/uploadFile', (req, res) => {
                 Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
               },
               IsNotif: nundef.checkReturn(req.body.notif, 'false')
-            },
-            {
-              FileName: req.file.originalname,
-              FileType: req.file.mimetype,
-              Size: req.file.size,
-              Filters: {
-                Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
-                Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
-              }
-            },
-            {
-              FileName: req.file.originalname,
-              FileType: req.file.mimetype,
-              Size: req.file.size,
-              IsNotif: nundef.checkReturn(req.body.notif, 'false')
             }
           ]
         }).toArray((findErr, result) => {
@@ -340,22 +324,6 @@ router.post('/bulkUpload', (req, res) => {
                   Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                   Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                 },
-                IsNotif: nundef.checkReturn(req.body.notif, 'false')
-              },
-              {
-                FileName: req.file.originalname,
-                FileType: req.file.mimetype,
-                Size: req.file.size,
-                Filters: {
-                  Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
-                  Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
-                  Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
-                }
-              },
-              {
-                FileName: req.file.originalname,
-                FileType: req.file.mimetype,
-                Size: req.file.size,
                 IsNotif: nundef.checkReturn(req.body.notif, 'false')
               }
             ]
