@@ -4,32 +4,32 @@
 			"Branches": {
 				"Physics": {
 					"Subjects": [
-						"Engineering Physics",
-						"Mechanics of Solids",
-						"Basic Electronics",
-						"Basic Mechanical Engineering",
-						"Communication Skills in English",
-						"Engineering Physics Lab",
-						"Workshop Practice"
+						["Physics", "Engineering Physics"],
+						["MoS", "Mechanics of Solids"],
+						["BE", "Basic Electronics"],
+						["BME", "Basic Mechanical Engineering"],
+						["English", "Communication Skills in English"],
+						["Physics Lab", "Engineering Physics Lab"],
+						["Workshop", "Workshop Practice"]
 					]
 				},
 				"Chemistry": {
 					"Subjects": [
-						"Engineering Chemistry",
-						"Biology for Engineers",
-						"Basic Electrical Technology",
-						"Problem Solving Using Computers",
-						"Environmental Studies",
-						"Engineering Chemistry Lab",
-						"PSUC Lab"
+						["Chem", "Engineering Chemistry"],
+						["Bio", "Biology for Engineers"],
+						["BET", "Basic Electrical Technology"],
+						["PSUC", "Problem Solving Using Computers"],
+						["EVS", "Environmental Studies"],
+						["Chem Lab", "Engineering Chemistry Lab"],
+						["PSUC Lab","Problem Solving Using Computers Lab"]
 					]
 				},
 				"Common": {
 					"Subjects": [
-						"Engineering Graphics - I",
-						"Engineering Graphics - II",
-						"Engineering Mathematics - I",
-						"Engineering Mathematics - II"
+						["EG I", "Engineering Graphics - I"],
+						["EG II", "Engineering Graphics - II"],
+						["Math I", "Engineering Mathematics - I"],
+						["Math II", "Engineering Mathematics - II"]
 					]
 				}
 			}
@@ -38,292 +38,292 @@
 			"Branches": {
 				"Aeronautical": {
 					"Subjects": [
-						"Aircraft Structures",
-						"Aircraft Production Techniques",
-						"Introduction of Aerospace Engineering",
-						"Thermodynamics",
-						"Fluid Mechanics",
-						"Aerodynamics",
-						"Aircraft Propulsion",
-						"Flight Mechanics",
-						"Linear Control Theory",
-						"Fluid Mechanics Lab",
-						"Structures Lab",
-						"Production Lab",
-						"Aerodynamics & Propulsion Lab",
-						"Numerical Computation Lab"
+						["AS", "Aircraft Structures"],
+						["APT", "Aircraft Production Techniques"],
+						["IoAE", "Introduction of Aerospace Engineering"],
+						["Thermo", "Thermodynamics"],
+						["Fluid", "Fluid Mechanics"],
+						["Aero", "Aerodynamics"],
+						["AP", "Aircraft Propulsion"],
+						["Flight", "Flight Mechanics"],
+						["LCT", "Linear Control Theory"],
+						["Fluid Lab", "Fluid Mechanics Lab"],
+						["Structure Lab", "Structures Lab"],
+						["Prod Lab", "Production Lab"],
+						["Aero Lab", "Aerodynamics & Propulsion Lab"],
+						["Numerical Lab", "Numerical Computation Lab"]
 					]
 				},
 				"Automobile": {
 					"Subjects": [
-						"Theory of Automotive Engines",
-						"Automotive Structures and Design",
-						"Material Science and Metallurgy",
-						"Thermodynamics",
-						"Fluid Mechanics",
-						"Computer Aided Part Modeling",
-						"Automotive Transmission System",
-						"Design of Machine Elements",
-						"Automotive Production Technology",
-						"Linear Control Theory",
-						"Computer Aided Vehicle Modeling",
-						"Automotive Engine Lab",
-						"Automotive Transmission Lab",
-						"Material Testing Lab"
+						["TAE", "Theory of Automotive Engines"],
+						["ASD", "Automotive Structures and Design"],
+						["MSM", "Material Science and Metallurgy"],
+						["Thermo", "Thermodynamics"],
+						["Fluid", "Fluid Mechanics"],
+						["CAD P", "Computer Aided Part Modeling"],
+						["AST", "Automotive Transmission System"],
+						["DME", "Design of Machine Elements"],
+						["APT", "Automotive Production Technology"],
+						["LCT", "Linear Control Theory"],
+						["CAD V","Computer Aided Vehicle Modeling"],
+						["TAE Lab", "Automotive Engine Lab"],
+						["ATS Lab", "Automotive Transmission Lab"],
+						["MT Lab", "Material Testing Lab"]
 					]
 				},
 				"Biomedical": {
 					"Subjects": [
-						"Analog Electronics",
-						"Anatomy & Physiology",
-						"Digital Electronics",
-						"Network Analysis",
-						"Signals & Systems",
-						"Biomechanics",
-						"Biomedical Instrumentation - I",
-						"Digital System Design",
-						"Integrated Circuit Systems",
-						"Circuit Simulation Lab",
-						"Electronics Lab",
-						"IC Systems Lab",
-						"MATLAB & Simulink"
+						["AE", "Analog Electronics"],
+						["AP", "Anatomy & Physiology"],
+						["DE", "Digital Electronics"],
+						["NA", "Network Analysis"],
+						["SnS", "Signals & Systems"],
+						["BioMech", "Biomechanics"],
+						["BI", "Biomedical Instrumentation - I"],
+						["DSD", "Digital System Design"],
+						["ICS", "Integrated Circuit Systems"],
+						["CS Lab", "Circuit Simulation Lab"],
+						["AE Lab", "Electronics Lab"],
+						["ICS Lab", "IC Systems Lab"],
+						["MATLAB", "MATLAB & Simulink"]
 					]
 				},
 				"Biotechnology": {
 					"Subjects": [
-						"Biochemistry",
-						"Bioprocess Calculations",
-						"Cell Biology",
-						"Fluid Flow Operations",
-						"Microbiology",
-						"Chemical and Biochemical Engineering Thermodynamics",
-						"Downstream Processes",
-						"Molecular Biology & Genetic Engineering",
-						"Principles of Heat and Mass Transfer Operations",
-						"Biochemistry Lab",
-						"Microbiology Lab",
-						"Molecular Biology and Genetic Engineering Lab",
-						"Unit Operations Lab"
+						["BioChem", "Biochemistry"],
+						["BPC", "Bioprocess Calculations"],
+						["Cell Bio", "Cell Biology"],
+						["FFO", "Fluid Flow Operations"],
+						["Microbiology", "Microbiology"],
+						["CBT", "Chemical and Biochemical Engineering Thermodynamics"],
+						["DP", "Downstream Processes"],
+						["MBG", "Molecular Biology & Genetic Engineering"],
+						["HMT", "Principles of Heat and Mass Transfer Operations"],
+						["Biochem", "Biochemistry Lab"],
+						["Microbiology Lab", "Microbiology Lab"],
+						["BMG Lab", "Molecular Biology and Genetic Engineering Lab"],
+						["UO Lab", "Unit Operations Lab"]
 					]
 				},
 				"Chemical": {
 					"Subjects": [
-						"Chemical Process Calculations",
-						"Momentum Transfer",
-						"Mechanical Operations",
-						"Chemical Engineering Thermodynamics - I",
-						"Organic Chemistry",
-						"Chemical Engineering Thermodynamics - II",
-						"Heat Transfer Operations",
-						"Mass Transfer - I",
-						"Physical Chemistry",
-						"Chemical Engineering Drawing",
-						"Organic Chemistry Lab",
-						"Momentum Transfer and Mechanical Operations Lab",
-						"Physical Chemical Lab"
+						["CPC", "Chemical Process Calculations"],
+						["MT", "Momentum Transfer"],
+						["MO", "Mechanical Operations"],
+						["CET I", "Chemical Engineering Thermodynamics - I"],
+						["Organic", "Organic Chemistry"],
+						["CET II", "Chemical Engineering Thermodynamics - II"],
+						["HT", "Heat Transfer Operations"],
+						["MT", "Mass Transfer - I"],
+						["Physical", "Physical Chemistry"],
+						["CED", "Chemical Engineering Drawing"],
+						["Organic Lab", "Organic Chemistry Lab"],
+						["MT Lab", "Momentum Transfer and Mechanical Operations Lab"],
+						["Physical Lab", "Physical Chemical Lab"]
 					]
 				},
 				"Civil": {
 					"Subjects": [
-						"Fluid Mechanics",
-						"Mechanics of Structure",
-						"Building Science and Technology",
-						"Basics of Surveying",
-						"Engineering Geology",
-						"Building Design and Drawing",
-						"Water Resources Engineering",
-						"Analysis of Indeterminate Structures",
-						"Basic Reinforced Concrete Design",
-						"Applied Surveying",
-						"Material Testing Lab - I",
-						"Surveying Practice - I",
-						"Geology Lab"
+						["Fluid", "Fluid Mechanics"],
+						["MoS", "Mechanics of Structure"],
+						["BST", "Building Science and Technology"],
+						["BoS", "Basics of Surveying"],
+						["EGeo", "Engineering Geology"],
+						["BDD", "Building Design and Drawing"],
+						["WRE", "Water Resources Engineering"],
+						["AIS", "Analysis of Indeterminate Structures"],
+						["RCD", "Basic Reinforced Concrete Design"],
+						["AS", "Applied Surveying"],
+						["MT Lab", "Material Testing Lab - I"],
+						["Survey", "Surveying Practice - I"],
+						["Geo Lab", "Geology Lab"]
 					]
 				},
 				"CCE": {
 					"Subjects": [
-						"Data Structures",
-						"Digital Systems and Computer Organization",
-						"Object Oriented Programming",
-						"Principles of Data Communication",
-						"Computer Network Protocols",
-						"Database Systems",
-						"Design and Analysis of Algorithms",
-						"Operating Systems",
-						"Data Structures Lab",
-						"Digital System Design Lab",
-						"Object Oriented Programming Lab",
-						"Algorithms Lab",
-						"Database Systems Lab",
-						"Operating Systems Lab"
+						["DS", "Data Structures"],
+						["DSCO", "Digital Systems and Computer Organization"],
+						["OOP", "Object Oriented Programming"],
+						["PDC", "Principles of Data Communication"],
+						["CN", "Computer Network Protocols"],
+						["DS", "Database Systems"],
+						["DAA", "Design and Analysis of Algorithms"],
+						["OS", "Operating Systems"],
+						["DS Lab", "Data Structures Lab"],
+						["DSD Lab", "Digital System Design Lab"],
+						["OOP Lab", "Object Oriented Programming Lab"],
+						["Algo Lab", "Algorithms Lab"],
+						["DS Lab", "Database Systems Lab"],
+						["OS Lab", "Operating Systems Lab"]
 					]
 				},
 				"CSE": {
 					"Subjects": [
-						"Computer Organization & Architecture",
-						"Data Structures and Applications",
-						"Digital System Design",
-						"Object Oriented Programming",
-						"Database Systems",
-						"Design and Analysis of Algorithms",
-						"Embedded Systems",
-						"Formal Languages and Automata Theory",
-						"Data Structure Lab",
-						"Digital System Design Lab",
-						"Object Oriented Programming Lab",
-						"Open Source Technologies Lab",
-						"Algorithms Lab",
-						"Database Systems Lab",
-						"Embedded Systems Lab"
+						["COA", "Computer Organization & Architecture"],
+						["DSA", "Data Structures and Applications"],
+						["DSD", "Digital System Design"],
+						["OOP", "Object Oriented Programming"],
+						["DS", "Database Systems"],
+						["DAA", "Design and Analysis of Algorithms"],
+						["ES", "Embedded Systems"],
+						["FLA", "Formal Languages and Automata Theory"],
+						["DS Lab", "Data Structure Lab"],
+						["DSD Lab", "Digital System Design Lab"],
+						["OOP Lab", "Object Oriented Programming Lab"],
+						["OS Lab", "Open Source Technologies Lab"],
+						["Algo Lab", "Algorithms Lab"],
+						["DS Lab", "Database Systems Lab"],
+						["ES Lab", "Embedded Systems Lab"]
 					]
 				},
 				"EEE": {
 					"Subjects": [
-						"Analog System Design",
-						"Digital System Design",
-						"Electrical Circuit Analysis",
-						"Electrical Machinery - I",
-						"Electromagnetic Theory",
-						"Electrical Machinery - II",
-						"Generation Transmission & Distribution",
-						"Linear Control Theory",
-						"Microcontrollers",
-						"Analog System Design Lab",
-						"Digital System Design Lab",
-						"Electrical Machinery Lab",
-						"Microcontroller Lab"
+						["ASD", "Analog System Design"],
+						["DSD", "Digital System Design"],
+						["ECA", "Electrical Circuit Analysis"],
+						["EM I", "Electrical Machinery - I"],
+						["EMT", "Electromagnetic Theory"],
+						["EM II", "Electrical Machinery - II"],
+						["GTnD", "Generation Transmission & Distribution"],
+						["LCT", "Linear Control Theory"],
+						["MC", "Microcontrollers"],
+						["ASD Lab", "Analog System Design Lab"],
+						["DSD Lab", "Digital System Design Lab"],
+						["EM Lab", "Electrical Machinery Lab"],
+						["MC Lab", "Microcontroller Lab"]
 					]
 				},
 				"ECE": {
 					"Subjects": [
-						"Analog Electronic Circuits",
-						"Electromagnetic Waves",
-						"Network Analysis",
-						"Signals and Systems",
-						"Logic Design",
-						"Antennas",
-						"IC Systems",
-						"Digital Signal Processing",
-						"Digital System Design Using Verilog",
-						"Digital Electronics Lab",
-						"Signals & Circuits Simulation Lab",
-						"Electronic Circuit Design Lab",
-						"DSP Lab"
+						["AEC", "Analog Electronic Circuits"],
+						["EMW", "Electromagnetic Waves"],
+						["NA", "Network Analysis"],
+						["SnS", "Signals and Systems"],
+						["LD", "Logic Design"],
+						["Antennas", "Antennas"],
+						["ICS", "IC Systems"],
+						["DSP", "Digital Signal Processing"],
+						["DSD", "Digital System Design Using Verilog"],
+						["DE Lab", "Digital Electronics Lab"],
+						["SnCS Lab", "Signals & Circuits Simulation Lab"],
+						["ECD Lab", "Electronic Circuit Design Lab"],
+						["DSP Lab", "DSP Lab"]
 					]
 				},
 				"Mechanical": {
 					"Subjects": [
-						"Kinematics of Machinery",
-						"Manufacturing Technology",
-						"Material Science and Metallurgy",
-						"Strength of Materials",
-						"Thermodynamics - I",
-						"Dynamics of Machinery",
-						"Fluid Mechanics",
-						"Metrology and Measurements",
-						"Thermodynamics - II",
-						"Computer Aided Mechanical Drawing and Modeling Lab",
-						"Workshop Practice - I",
-						"Strength of Materials Lab",
-						"Workshop Practice - II"
+						["KoM", "Kinematics of Machinery"],
+						["MFT", "Manufacturing Technology"],
+						["MSM", "Material Science and Metallurgy"],
+						["SoM", "Strength of Materials"],
+						["Thermo I", "Thermodynamics - I"],
+						["DoM", "Dynamics of Machinery"],
+						["Fluid", "Fluid Mechanics"],
+						["MnM", "Metrology and Measurements"],
+						["Thermo II", "Thermodynamics - II"],
+						["CAD Lab", "Computer Aided Mechanical Drawing and Modeling Lab"],
+						["Workshop I", "Workshop Practice - I"],
+						["SoM Lab", "Strength of Materials Lab"],
+						["Workshop II", "Workshop Practice - II"]
 					]
 				},
 				"IT": {
 					"Subjects": [
-						"Object Oriented Programming",
-						"Digital Systems",
-						"Data Structures",
-						"Principles of Data Communication",
-						"Computer Networks",
-						"Computer Organization & Microprocessor Systems",
-						"Database Systems",
-						"Software Engineering",
-						"Object Oriented Programming Lab",
-						"Digital Systems Lab",
-						"Data Structures Lab",
-						"Microprocessor Systems Lab",
-						"Database Systems Lab",
-						"Software Engineering Lab"
+						["OOP", "Object Oriented Programming"],
+						["DSM", "Digital Systems"],
+						["DS", "Data Structures"],
+						["PDC", "Principles of Data Communication"],
+						["CN", "Computer Networks"],
+						["COMP", "Computer Organization & Microprocessor Systems"],
+						["DBS", "Database Systems"],
+						["SE", "Software Engineering"],
+						["OOP Lab", "Object Oriented Programming Lab"],
+						["DSM Lab", "Digital Systems Lab"],
+						["DS Lab", "Data Structures Lab"],
+						["MP Lab", "Microprocessor Systems Lab"],
+						["DS Lab", "Database Systems Lab"],
+						["SE Lab", "Software Engineering Lab"]
 					]
 				},
-				"Industrial and Production Engineering": {
+				"IPE": {
 					"Subjects": [
-						"Facilities Planning and Design",
-						"Manufacturing Process Engineering",
-						"Metrology and Measurements",
-						"Science and Mechanics of Materials",
-						"Thermal Engineering",
-						"Computer Aided Mechanical Drawing",
-						"Material Testing Lab",
-						"Workshop Practice - I",
-						"Fluid Mechanics and Machinery",
-						"Manufacturing Automation Engineering",
-						"Theory of Machines",
-						"Work Systems Engineering",
-						"Metrology Lab",
-						"Thermo-fluid Lab",
-						"Workshop Practice - II"
+						["FPD", "Facilities Planning and Design"],
+						["MPE", "Manufacturing Process Engineering"],
+						["MnM", "Metrology and Measurements"],
+						["SMM", "Science and Mechanics of Materials"],
+						["Thermal", "Thermal Engineering"],
+						["CAD", "Computer Aided Mechanical Drawing"],
+						["Material Lab", "Material Testing Lab"],
+						["Workshop I", "Workshop Practice - I"],
+						["FMM", "Fluid Mechanics and Machinery"],
+						["MAE", "Manufacturing Automation Engineering"],
+						["ToM", "Theory of Machines"],
+						["WSM", "Work Systems Engineering"],
+						["Metro Lab", "Metrology Lab"],
+						["Thermo Lab", "Thermo-fluid Lab"],
+						["Workshop II", "Workshop Practice - II"]
 					]
 				},
-				"Print and Media Technology": {
+				"Print and Media": {
 					"Subjects": [
-						"Basics of Print Media",
-						"Imaging Techniques",
-						"Electronic Composition",
-						"Printing Material Science - I",
-						"Fundamentals of Electronic Media",
-						"Offset Printing",
-						"Printing Material Science - II",
-						"Audio and Video Signals",
-						"Imaging Techniques Lab",
-						"Electronic Composition Lab",
-						"Printing Material Testing Lab",
-						"Audio and Video Signals Lab"
+						["Print Media", "Basics of Print Media"],
+						["IGT", "Imaging Techniques"],
+						["EC", "Electronic Composition"],
+						["PMS I", "Printing Material Science - I"],
+						["FEM", "Fundamentals of Electronic Media"],
+						["OP", "Offset Printing"],
+						["PMS II", "Printing Material Science - II"],
+						["AVS", "Audio and Video Signals"],
+						["IT Lab", "Imaging Techniques Lab"],
+						["EC Lab", "Electronic Composition Lab"],
+						["PMT Lab", "Printing Material Testing Lab"],
+						["AVS Lab", "Audio and Video Signals Lab"]
 					]
 				},
-				"Electronics and Instrumentation Engineering": {
+				"EIE": {
 					"Subjects": [
-						"Analog Electronic Circuits",
-						"Digital Electronic Circuits",
-						"Electronic Measurements",
-						"Network Analysis and Signals",
-						"Sensors and Transducers",
-						"Digital System Design",
-						"Industrial Instrumentation",
-						"Linear Control Theory",
-						"Linear Integrated Circuits",
-						"Digital Circuits Lab",
-						"Measurement and Transducers Lab",
-						"Virtual Instrumentation Lab",
-						"Analog Circuits Lab",
-						"Circuit Simulation and HDL Lab",
-						"Instrumentation Lab"
+						["AEC", "Analog Electronic Circuits"],
+						["DEC", "Digital Electronic Circuits"],
+						["EM", "Electronic Measurements"],
+						["NAS", "Network Analysis and Signals"],
+						["SnT", "Sensors and Transducers"],
+						["DSD", "Digital System Design"],
+						["II", "Industrial Instrumentation"],
+						["LCT", "Linear Control Theory"],
+						["LIC", "Linear Integrated Circuits"],
+						["DC Lab", "Digital Circuits Lab"],
+						["MT Lab", "Measurement and Transducers Lab"],
+						["VI Lab", "Virtual Instrumentation Lab"],
+						["AC Lab", "Analog Circuits Lab"],
+						["HDL Lab", "Circuit Simulation and HDL Lab"],
+						["Ins Lab", "Instrumentation Lab"]
 					]
 				},
 				"Mechatronics": {
 					"Subjects": [
-						"Data Structures and Algorithms",
-						"Digital System Design",
-						"Microcontroller Based System Design",
-						"Robotics - I",
-						"Sensors and Instrumentation",
-						"Microcontroller Lab",
-						"Robotics Lab - I",
-						"Sensors and PLC Lab",
-						"Automated Manufacturing Systems",
-						"Design of Machine Elements",
-						"Linear Control Theory",
-						"Linear Integrated Circuits and Applications",
-						"CAD and Kinematics' Simulation Lab",
-						"Integrated Electronics Lab",
-						"Manufacturing Processes Lab"
+						["DSA", "Data Structures and Algorithms"],
+						["DSD", "Digital System Design"],
+						["MSD", "Microcontroller Based System Design"],
+						["Robo I", "Robotics - I"],
+						["SnI", "Sensors and Instrumentation"],
+						["MSD Lab", "Microcontroller Lab"],
+						["Robo Lab I", "Robotics Lab - I"],
+						["PLC Lab", "Sensors and PLC Lab"],
+						["AMS", "Automated Manufacturing Systems"],
+						["DME", "Design of Machine Elements"],
+						["LCT", "Linear Control Theory"],
+						["LIC", "Linear Integrated Circuits and Applications"],
+						["CAD Lab", "CAD and Kinematics' Simulation Lab"],
+						["IE Lab", "Integrated Electronics Lab"],
+						["MP Lab", "Manufacturing Processes Lab"]
 					]
 				},
 				"Common": {
 					"Subjects": [
-						"Engineering Mathematics - III",
-						"Engineering Mathematics - IV",
-						"Open Elective"
+						["Math III", "Engineering Mathematics - III"],
+						["Math IV", "Engineering Mathematics - IV"],
+						["OE", "Open Elective"]
 					]
 				}
 			}
@@ -332,271 +332,271 @@
 			"Branches": {
 				"Aeronautical": {
 					"Subjects": [
-						"Flight Dynamics",
-						"Gas Dynamics",
-						"Rocket Propulsion",
-						"Aircraft Design - I",
-						"Essentials of Management",
-						"Aircraft Design - II",
-						"Finite Element Method",
-						"Geometric Modeling Lab - I",
-						"Aircraft Design Lab",
-						"Geometric Modeling Lab - II",
-						"Structural Analysis Lab"
+						["FD", "Flight Dynamics"],
+						["GD", "Gas Dynamics"],
+						["RP", "Rocket Propulsion"],
+						["AD I", "Aircraft Design - I"],
+						["EoM", "Essentials of Management"],
+						["AD II", "Aircraft Design - II"],
+						["FEM", "Finite Element Method"],
+						["GML Lab I", "Geometric Modeling Lab - I"],
+						["AD Lab", "Aircraft Design Lab"],
+						["GML Lab II", "Geometric Modeling Lab - II"],
+						["SA Lab", "Structural Analysis Lab"]
 					]
 				},
 				"Automobile": {
 					"Subjects": [
-						"Autotronics",
-						"Theory of Machines",
-						"Actuation Systems",
-						"Measurements and Metrology",
-						"Essentials of Management",
-						"Vehicle Aerodynamics",
-						"Automotive Chassis and Suspension",
-						"Thermal Engineering Lab",
-						"System Simulation Lab",
-						"Automotive Machine Shop",
-						"Vehicle Aerodynamics Lab"
+						["Autotronics", "Autotronics"],
+						["ToM", "Theory of Machines"],
+						["AS", "Actuation Systems"],
+						["MaM", "Measurements and Metrology"],
+						["EoM", "Essentials of Management"],
+						["VA", "Vehicle Aerodynamics"],
+						["ACS", "Automotive Chassis and Suspension"],
+						["Thermal Lab", "Thermal Engineering Lab"],
+						["SS Lab", "System Simulation Lab"],
+						["AM Shop", "Automotive Machine Shop"],
+						["VA Lab", "Vehicle Aerodynamics Lab"]
 					]
 				},
 				"Biomedical": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Basic Clinical Science - I",
-						"Biomedical Instrumentation - II",
-						"Digital Signal Processing",
-						"Microcontroller Based Systems",
-						"Essentials of Management",
-						"Basic Clinical Sciences - II",
-						"Digital Image Processing",
-						"Biomedical Instrumentation Lab - I",
-						"Microcontroller Lab",
-						"Biomedical Instrumentation Lab - II",
-						"Signal and Image Processing Lab"
+						["EEFM", "Engineering Economics and Financial Management"],
+						["BCS I", "Basic Clinical Science - I"],
+						["BI II", "Biomedical Instrumentation - II"],
+						["DSP", "Digital Signal Processing"],
+						["MBS", "Microcontroller Based Systems"],
+						["EoM", "Essentials of Management"],
+						["BCS II", "Basic Clinical Sciences - II"],
+						["DIP", "Digital Image Processing"],
+						["BI Lab I", "Biomedical Instrumentation Lab - I"],
+						["Mc Lab", "Microcontroller Lab"],
+						["BI Lab II", "Biomedical Instrumentation Lab - II"],
+						["SIP Lab", "Signal and Image Processing Lab"]
 					]
 				},
 				"Biotechnology": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Bioinformatics",
-						"Bioprocess Engineering",
-						"Bioreaction Engineering",
-						"Separation Processes",
-						"Essentials of Management",
-						"Animal, Plant Biotechnology and Bioethics",
-						"Bioprocess Control and Instrumentation",
-						"Bioinformatics Lab",
-						"Downstream and Separation Processes Lab",
-						"Animal, Plant Biotechnology and Bioprocess Engineering Lab",
-						"Bioreaction Engineering and Bioprocess Control Lab"
+						["EEFM", "Engineering Economics and Financial Management"],
+						["BI", "Bioinformatics"],
+						["BPE", "Bioprocess Engineering"],
+						["BRE", "Bioreaction Engineering"],
+						["SP", "Separation Processes"],
+						["EoM", "Essentials of Management"],
+						["APBB", "Animal, Plant Biotechnology and Bioethics"],
+						["BPCI", "Bioprocess Control and Instrumentation"],
+						["BI Lab", "Bioinformatics Lab"],
+						["DSP Lab", "Downstream and Separation Processes Lab"],
+						["APBB Lab", "Animal, Plant Biotechnology and Bioprocess Engineering Lab"],
+						["BE Lab", "Bioreaction Engineering and Bioprocess Control Lab"]
 					]
 				},
 				"Chemical": {
 					"Subjects": [
-						"Mass Transfer - II",
-						"Chemical Reaction Engineering - I",
-						"Transport Phenomena",
-						"Chemical Process Industries",
-						"Computational Methods in Chemical Engineering",
-						"Essentials of Management",
-						"Chemical Reaction Engineering - II",
-						"Process Dynamics and Control",
-						"Heat Transfer Lab",
-						"Mass Transfer Lab",
-						"Computational Methods in Chemical Engineering Lab"
+						["MT II", "Mass Transfer - II"],
+						["CRE I", "Chemical Reaction Engineering - I"],
+						["TP", "Transport Phenomena"],
+						["CPI", "Chemical Process Industries"],
+						["CMC", "Computational Methods in Chemical Engineering"],
+						["EoM", "Essentials of Management"],
+						["CRE II", "Chemical Reaction Engineering - II"],
+						["PDC", "Process Dynamics and Control"],
+						["HT Lab", "Heat Transfer Lab"],
+						["MT Lab", "Mass Transfer Lab"],
+						["CMCE Lab", "Computational Methods in Chemical Engineering Lab"]
 					]
 				},
 				"Civil": {
 					"Subjects": [
-						"Geotechnical Engineering",
-						"Basic Structural Steel Design",
-						"Water Supply Engineering",
-						"Highway Engineering",
-						"Elements of Earthquake Engineering",
-						"Engineering Economics and Financial Management",
-						"Applied Soil Engineering",
-						"Waste Water Management",
-						"Railway and Airport Engineering",
-						"Soil Mechanics Lab",
-						"Fluid Mechanics Lab",
-						"Structural Design and Drawing",
-						"Material Testing Lab - II",
-						"Surveying Practice - II"
+						["GE", "Geotechnical Engineering"],
+						["BSSD", "Basic Structural Steel Design"],
+						["WSE", "Water Supply Engineering"],
+						["HE", "Highway Engineering"],
+						["EEE", "Elements of Earthquake Engineering"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["ASE", "Applied Soil Engineering"],
+						["WWM", "Waste Water Management"],
+						["RAE", "Railway and Airport Engineering"],
+						["SM Lab", "Soil Mechanics Lab"],
+						["FM Lab", "Fluid Mechanics Lab"],
+						["SDD", "Structural Design and Drawing"],
+						["MT Lab", "Material Testing Lab - II"],
+						["SP II", "Surveying Practice - II"]
 					]
 				},
 				"CCE": {
 					"Subjects": [
-						"Essentials of Management",
-						"Data Mining and Predictive Analysis",
-						"Information Security",
-						"Network Programming and Advanced Communication Networks",
-						"Software Design Technology",
-						"Engineering Economics and Financial Management",
-						"Embedded Systems Design",
-						"Wireless Communication and Computing",
-						"Advanced Programming Lab",
-						"Data Mining and Predictive Analysis Lab",
-						"Network Design and Programming Lab",
-						"Embedded Systems and IoT Lab",
-						"Mobile Application Development Lab",
-						"Network Simulation Lab"
+						["EoM", "Essentials of Management"],
+						["DMPA", "Data Mining and Predictive Analysis"],
+						["IS", "Information Security"],
+						["NPACN", "Network Programming and Advanced Communication Networks"],
+						["SDT", "Software Design Technology"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["ESD", "Embedded Systems Design"],
+						["WCC", "Wireless Communication and Computing"],
+						["AP Lab", "Advanced Programming Lab"],
+						["DMPA Lab", "Data Mining and Predictive Analysis Lab"],
+						["NDP Lab", "Network Design and Programming Lab"],
+						["ES Lab", "Embedded Systems and IoT Lab"],
+						["MAD Lab", "Mobile Application Development Lab"],
+						["NS Lab", "Network Simulation Lab"]
 					]
 				},
 				"CSE": {
 					"Subjects": [
-						"Compiler Design",
-						"Computer Networks",
-						"Operating Systems",
-						"Software Engineering",
-						"Engineering Economics and Financial Management",
-						"Distributed Systems",
-						"Parallel Computer Architecture and Programming",
-						"Compiler Design Lab",
-						"Computer Networks Lab",
-						"Operating Systems Lab",
-						"Distributed Systems Lab",
-						"Internet Technologies Lab",
-						"Parallel Programming Lab"
+						["CD", "Compiler Design"],
+						["CN", "Computer Networks"],
+						["OS", "Operating Systems"],
+						["SE", "Software Engineering"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["DS", "Distributed Systems"],
+						["PCAP", "Parallel Computer Architecture and Programming"],
+						["CD Lab", "Compiler Design Lab"],
+						["CN Lab", "Computer Networks Lab"],
+						["OS Lab", "Operating Systems Lab"],
+						["DS Lab", "Distributed Systems Lab"],
+						["IT Lab", "Internet Technologies Lab"],
+						["PP Lab", "Parallel Programming Lab"]
 					]
 				},
 				"EEE": {
 					"Subjects": [
-						"Essentials of Management",
-						"Communication Systems",
-						"Digital Signal Processing",
-						"Measurements & Instrumentation",
-						"Power System Analysis",
-						"Engineering Economics and Financial Management",
-						"Power Electronics",
-						"Switch Gear & Protection",
-						"DSP Lab",
-						"Measurements & Instrumentation Lab",
-						"Power Electronics Lab",
-						"Power Systems Lab"
+						["EoM", "Essentials of Management"],
+						["CS", "Communication Systems"],
+						["DSP", "Digital Signal Processing"],
+						["MaI", "Measurements & Instrumentation"],
+						["PSA", "Power System Analysis"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["PE", "Power Electronics"],
+						["SGP", "Switch Gear & Protection"],
+						["DSP Lab", "Digital Signal Processing Lab"],
+						["MaI Lab", "Measurements & Instrumentation Lab"],
+						["PE Lab", "Power Electronics Lab"],
+						["PS Lab", "Power Systems Lab"]
 					]
 				},
 				"ECE": {
 					"Subjects": [
-						"Linear and Digital Control Systems",
-						"Microcontrollers",
-						"Analog Communication",
-						"VLSI Design",
-						"Communication Networks",
-						"Computer Organization and Architecture",
-						"Essentials of Management",
-						"Digital Communication",
-						"Microcontroller Lab",
-						"VLSI Lab",
-						"Communication Lab - I",
-						"Communication Network Lab"
+						["LDCS", "Linear and Digital Control Systems"],
+						["MC", "Microcontrollers"],
+						["AC", "Analog Communication"],
+						["VLSI", "VLSI Design"],
+						["CN", "Communication Networks"],
+						["COA", "Computer Organization and Architecture"],
+						["EoM", "Essentials of Management"],
+						["DC", "Digital Communication"],
+						["MC Lab", "Microcontroller Lab"],
+						["VLSI Lab", "VLSI Lab"],
+						["CL I", "Communication Lab - I"],
+						["CNL", "Communication Network Lab"]
 					]
 				},
 				"Mechanical": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"CAD - CAM",
-						"Finite Element Methods",
-						"Mechanical Design - I",
-						"Turbo Machines",
-						"Essentials of Management",
-						"Heat Transfer",
-						"Mechanical Design - II",
-						"Mechanical Lab - I",
-						"Metrology Lab",
-						"Finite Element Methods (FEM) Lab",
-						"Mechanical Lab - II"
+						["EEFM", "Engineering Economics and Financial Management"],
+						["CC", "CAD - CAM"],
+						["FEA", "Finite Element Methods"],
+						["Mech I", "Mechanical Design - I"],
+						["TM", "Turbo Machines"],
+						["EoM", "Essentials of Management"],
+						["HT", "Heat Transfer"],
+						["Mech II", "Mechanical Design - II"],
+						["Mech Lab I", "Mechanical Lab - I"],
+						["MT Lab", "Metrology Lab"],
+						["FEM Lab", "Finite Element Methods Lab"],
+						["Mech Lab II", "Mechanical Lab - II"]
 					]
 				},
 				"IT": {
 					"Subjects": [
-						"Operating Systems",
-						"Embedded Systems",
-						"Internet Tools & Technology",
-						"Design & Analysis of Algorithms",
-						"Engineering Economics and Financial Management",
-						"Distributed Systems",
-						"Data Warehousing and Data Mining",
-						"Embedded Systems Lab",
-						"Internet Tools & Technology Lab",
-						"Operating Systems & Algorithms Lab",
-						"Computer Network Lab",
-						"Data Warehousing & Data Mining Lab",
-						"Advanced Technology Lab"
+						["OS", "Operating Systems"],
+						["ES", "Embedded Systems"],
+						["ITT", "Internet Tools & Technology"],
+						["DAA", "Design & Analysis of Algorithms"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["DS", "Distributed Systems"],
+						["DWDA", "Data Warehousing and Data Mining"],
+						["ES Lab", "Embedded Systems Lab"],
+						["ITT Lab", "Internet Tools & Technology Lab"],
+						["OS Lab", "Operating Systems & Algorithms Lab"],
+						["CN Lab", "Computer Network Lab"],
+						["DWDA Lab", "Data Warehousing & Data Mining Lab"],
+						["AT Lab", "Advanced Technology Lab"]
 					]
 				},
-				"Industrial and Production Engineering": {
+				"IPE": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Design of Machine Elements",
-						"Operations Research",
-						"Simulation Modeling and Analysis",
-						"Total Quality Management",
-						"Essentials of Management",
-						"Operations and Supply Chain Management",
-						"Tool Engineering and Design",
-						"Automation Engineering Lab",
-						"Operations Research Lab",
-						"Work Systems Engineering Lab",
-						"Operations Management Lab",
-						"Quality Engineering Lab",
-						"Simulation Modeling and Analysis Lab"
+						["EEFM", "Engineering Economics and Financial Management"],
+						["DME", "Design of Machine Elements"],
+						["OR", "Operations Research"],
+						["SMA", "Simulation Modeling and Analysis"],
+						["TQM", "Total Quality Management"],
+						["EoM", "Essentials of Management"],
+						["OSCM", "Operations and Supply Chain Management"],
+						["TED", "Tool Engineering and Design"],
+						["AE Lab", "Automation Engineering Lab"],
+						["OR Lab", "Operations Research Lab"],
+						["WSE Lab", "Work Systems Engineering Lab"],
+						["OM Lab", "Operations Management Lab"],
+						["QE Lab", "Quality Engineering Lab"],
+						["SMA Lab", "Simulation Modeling and Analysis Lab"]
 					]
 				},
-				"Print and Media Technology": {
+				"Print and Media": {
 					"Subjects": [
-						"Flexography, Gravure & Screen Printing",
-						"Digital and Security Printing",
-						"Color Analysis and Reproduction",
-						"Sound Engineering",
-						"Color Analysis and Reproduction Lab",
-						"Essentials of Management",
-						"Print Finishing and Converting",
-						"Video Processing",
-						"Printing Machine Lab",
-						"Sound Engineering Lab",
-						"Print Finishing and Converting Lab",
-						"Video Processing Lab"
+						["FGSP", "Flexography, Gravure & Screen Printing"],
+						["DSP", "Digital and Security Printing"],
+						["CAR", "Color Analysis and Reproduction"],
+						["SE", "Sound Engineering"],
+						["CAR Lab", "Color Analysis and Reproduction Lab"],
+						["EoM", "Essentials of Management"],
+						["PFC", "Print Finishing and Converting"],
+						["VP", "Video Processing"],
+						["PM Lab", "Printing Machine Lab"],
+						["SE Lab", "Sound Engineering Lab"],
+						["PFC Lab", "Print Finishing and Converting Lab"],
+						["VP Lab", "Video Processing Lab"]
 					]
 				},
-				"Electronics and Instrumentation Engineering": {
+				"EIE": {
 					"Subjects": [
-						"Essentials of Management",
-						"Control System Components",
-						"Micro-controllers",
-						"Modern Control Theory",
-						"Process Instrumentation and Control",
-						"Engineering Economics and Financial Management",
-						"Digital Signal Processing",
-						"Industrial Automation",
-						"Micro-controller Lab",
-						"Process Control Lab",
-						"Automation Lab",
-						"Control System Lab",
-						"DSP Lab"
+						["EoM", "Essentials of Management"],
+						["CSC", "Control System Components"],
+						["MC", "Microcontrollers"],
+						["MCT", "Modern Control Theory"],
+						["PIC", "Process Instrumentation and Control"],
+						["EEFM", "Engineering Economics and Financial Management"],
+						["DSP", "Digital Signal Processing"],
+						["IA", "Industrial Automation"],
+						["MC Lab", "Microcontroller Lab"],
+						["PC Lab", "Process Control Lab"],
+						["Auto Lab", "Automation Lab"],
+						["CS Lab", "Control System Lab"],
+						["DSP Lab", "Digital Signal Processing Lab"]
 					]
 				},
 				"Mechatronics": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Digital Signal Processing",
-						"Electric Drives",
-						"Hydraulics and Pneumatics Systems",
-						"Theory of Machines",
-						"Essentials of Management",
-						"Automobile Engineering",
-						"Energy and Heat Transfer",
-						"Drives, Controls and Modeling Lab",
-						"Robotics Lab - II",
-						"Hydraulics Lab",
-						"IoT Lab",
-						"Pneumatics Lab"
+						["EEFM", "Engineering Economics and Financial Management"],
+						["DSP", "Digital Signal Processing"],
+						["ED", "Electric Drives"],
+						["HPS", "Hydraulics and Pneumatics Systems"],
+						["ToM", "Theory of Machines"],
+						["EoM", "Essentials of Management"],
+						["AE", "Automobile Engineering"],
+						["EHT", "Energy and Heat Transfer"],
+						["DCM Lab", "Drives, Controls and Modeling Lab"],
+						["Robo Lab II", "Robotics Lab - II"],
+						["Hydraulics Lab", "Hydraulics Lab"],
+						["IoT Lab", "Internet of Things Lab"],
+						["Pneumatics Lab", "Pneumatics Lab"]
 					]
 				},
 				"Common": {
 					"Subjects": [
-						"Program Elective",
-						"Open Elective"
+						["PE", "Program Elective"],
+						["OE", "Open Elective"]
 					]
 				}
 
@@ -606,70 +606,66 @@
 			"Branches": {
 				"Aeronautical": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Theory of Vibrations",
-						"Helicopter Aerodynamics",
-						"Avionics & Navigation Systems",
-						"Avionics Lab"
+						["ToV", "Theory of Vibrations"],
+						["HAD", "Helicopter Aerodynamics"],
+						["ANS", "Avionics & Navigation Systems"],
+						["Avionics Lab", "Avionics Lab"]
 					]
 				},
 				"Automobile": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Theory of Vibrations",
-						"Combustion and Heat Transfer",
-						"Automotive Pollution Control & Alternative Fuels",
-						"Computer Aided Engineering Lab"
+						["ToV", "Theory of Vibrations"],
+						["CHT", "Combustion and Heat Transfer"],
+						["APC", "Automotive Pollution Control & Alternative Fuels"],
+						["CAD Lab", "Computer Aided Engineering Lab"]
 					]
 				},
 				"Chemical": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Process Modeling and Simulation",
-						"Design and Drawing of Chemical Equipments",
-						"Process Modeling and Simulation Lab",
-						"Reaction Engineering and Process Control Lab"
+						["PMS", "Process Modeling and Simulation"],
+						["DCE", "Design and Drawing of Chemical Equipments"],
+						["PMS Lab", "Process Modeling and Simulation Lab"],
+						["RPC Lab", "Reaction Engineering and Process Control Lab"]
 					]
 				},
 				"Civil": {
 					"Subjects": [
-						"Essentials of Management",
-						"Estimating and Construction Management",
-						"Computer Aided Analysis and Design Lab",
-						"Environment Engineering Lab",
-						"Estimation and Costing Practice"
+						["EM", "Essentials of Management"],
+						["ECM", "Estimating and Construction Management"],
+						["CAD Lab", "Computer Aided Analysis and Design Lab"],
+						["EE Lab", "Environment Engineering Lab"],
+						["EC Practice", "Estimation and Costing Practice"]
 					]
 				},
 				"ECE": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Wireless Communication",
-						"RF & Microwave Engineering",
-						"Communication Lab - II"
+						["WC", "Wireless Communication"],
+						["RFM", "RF & Microwave Engineering"],
+						["Communication Lab II", "Communication Lab - II"]
 					]
 				},
 				"IT": {
 					"Subjects": [
-						"Essentials of Management",
-						"Business Intelligence",
-						"Information & Web Security",
-						"Data Analytics Lab"
+						["EM", "Essentials of Management"],
+						["Business Intelligence", "Business Intelligence"],
+						["IWS", "Information & Web Security"],
+						["DA Lab", "Data Analytics Lab"]
 					]
 				},
-				"Print and Media Technology": {
+				"Print and Media": {
 					"Subjects": [
-						"Engineering Economics and Financial Management",
-						"Package Design and Testing",
-						"Media Production",
-						"Animation Technology",
-						"Package Design and Testing Lab",
-						"Animation Technology Lab"
+						["PDT", "Package Design and Testing"],
+						["Media Production", "Media Production"],
+						["Animation", "Animation Technology"],
+						["PDT Lab", "Package Design and Testing Lab"],
+						["Animation Lab", "Animation Technology Lab"]
 					]
 				},
 				"Common": {
 					"Subjects": [
-						"Program Elective",
-						"Open Elective"
+						["PE", "Program Elective"],
+						["OE", "Open Elective"],
+						["EFM", "Engineering Economics and Financial Management"]
 					]
 				}
 			}
