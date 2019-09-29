@@ -200,7 +200,6 @@ router.post('/uploadFile', (req, res) => {
         return info.find({
           $or: [
             {
-              FileName: req.file.originalname,
               FileType: req.file.mimetype,
               Size: req.file.size,
               Filters: {
