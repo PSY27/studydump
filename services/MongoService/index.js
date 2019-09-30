@@ -26,8 +26,28 @@ const init = MongoURL => new Promise((resolve, reject) => {
   });
 });
 
+// findManyAnddelete
+function findManyAndDelete(collection, filter, cb) {
+  collection.find(filter).toArray((finErr, data) => {
+    if (finErr) {
+      cb(finErr);
+    }
+    else {
+      collection.deleteMany(filter, (delErr) => {
+        if (delErr) {
+          cb(delErr);
+        }
+        else {
+          cb(null, data);
+        }
+      });
+    }
+  });
+}
+
 
 /* Module Exports */
 module.exports = {
-  init
+  init,
+  findManyAndDelete
 };

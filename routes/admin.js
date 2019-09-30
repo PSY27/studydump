@@ -7,6 +7,8 @@ const mongodb = require('mongodb');
 /* Import Services */
 const auth = require('services/Authorization');
 const logService = require('services/LogService');
+const mongoService = require('services/MongoService');
+
 
 /* Import Utils */
 const debugLog = require('utils/DebugLogger');
@@ -93,7 +95,7 @@ router.get('/view', (req, res) => {
 
 // Report Audit View
 router.get('/audit', (req, res) => {
-  if (auth.checkHighAuth()) {
+  if (auth.checkHighAuth(req)) {
     const info = req.app.get('db').collection(infoDB);
 
     info.find({ isReported: true }).sort({ 'Counts.DownloadCount': -1, 'Counts.CallCount': -1, _id: 1 }).toArray((err, result) => {
@@ -114,7 +116,7 @@ router.get('/audit', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).send('Couldn\'t authenticate connection');
+    res.status(401).redirect('login');
   }
 });
 
@@ -123,7 +125,7 @@ router.post('/free/:id', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
   const logger = req.app.get('db').collection(logDB);
 
-  if (auth.checkHighAuth()) {
+  if (auth.checkHighAuth(req)) {
     info.findOneAndUpdate(
       { _id: new mongodb.ObjectId(req.params.id) },
       { $set: { isReported: false } },
@@ -135,21 +137,18 @@ router.post('/free/:id', (req, res) => {
         else {
           debugLog.info('Freed document from report');
 
-          logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+          logService.addLog('Document freed', 'Admin', req.params.id, logger);
 
-          res.redirect(`${req.baseUrl}/audit`);
+          res.redirect('audit');
         }
       }
     );
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).send('Couldn\'t authenticate connection');
+    res.status(401).redirect('login');
   }
 });
-
-
-
 
 // Document Delete Route
 router.post('/delete/:id', (req, res) => {
@@ -168,7 +167,7 @@ router.post('/delete/:id', (req, res) => {
       else {
         debugLog.info('Removed document from database');
 
-        logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+        logService.addLog('Deleted document', 'Admin', req.params.id, logger);
 
         s3.deleteObject({ Bucket: process.env.S3_STORAGE_BUCKET_NAME, Key: uploadSuffix + doc.value.DownloadURL.replace(/^.+\//g, '') }, (delerr) => {
           if (delerr) {
@@ -179,8 +178,44 @@ router.post('/delete/:id', (req, res) => {
             debugLog.success('Deleted file : ', doc.value.DownloadURL.replace(/^.+\//g, ''));
           }
         });
-        res.redirect('../view');
+        res.redirect(req.header('Referer') || 'view');
       }
+    });
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).redirect('login');
+  }
+});
+
+// Flush All Route
+router.post('/flush', (req, res) => {
+  const info = req.app.get('db').collection(infoDB);
+  const logger = req.app.get('db').collection(logDB);
+
+  if (auth.checkHighAuth(req)) {
+    mongoService.findManyAndDelete(info, {}, (err, files) => {
+      if (err) {
+        debugLog.error('Can\'t run query', err);
+      }
+      else {
+        debugLog.info('Flushed all documents');
+
+        logService.addLog('Flushed database', 'Super-Admin', req.get('Authorization'), logger);
+
+        files.forEach((doc) => {
+          s3.deleteObject({ Bucket: process.env.S3_STORAGE_BUCKET_NAME, Key: uploadSuffix + doc.DownloadURL.replace(/^.+\//g, '') }, (delErr) => {
+            if (delErr) {
+              debugLog.error('Error occured in deleting from bucket. Try manually removing the object', delErr);
+            }
+            else {
+              debugLog.success('Deleted file : ', doc.DownloadURL.replace(/^.+\//g, ''));
+            }
+          });
+        });
+        res.redirect(req.header('Referer') || 'view');
+      }
+      return true;
     });
   }
   else {
@@ -198,7 +233,7 @@ router.post('/login', (req, res) => {
 
     if (expectUser[0] !== undefined && expectUser[0].Password === req.body.password) {
       res.cookie('authCert', 'value', Options.cookieOptions).redirect('view');
-      logService.addLog('Admin Login', 'Admin', req.body.userid, logger);
+      logService.addLog('Admin logged in', 'Admin', req.body.userid, logger);
     }
     else {
       res.render('login', {

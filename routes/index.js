@@ -243,7 +243,7 @@ router.post('/uploadFile', (req, res) => {
                   Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                   Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                 },
-                isNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                 DownloadURL: req.file.location,
                 ThumbnailURL: thumbObj.thumbnail,
                 Counts: {
@@ -322,9 +322,9 @@ router.post('/bulkUpload', (req, res) => {
           info.find({
             $or: [
               {
-                FileName: req.file.originalname,
-                FileType: req.file.mimetype,
-                Size: req.file.size,
+                FileName: doc.originalname,
+                FileType: doc.mimetype,
+                Size: doc.size,
                 Filters: {
                   Year: nundef.checkReturn(req.body.year, '0').sanitise().toNum(),
                   Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
@@ -349,12 +349,12 @@ router.post('/bulkUpload', (req, res) => {
               if (nundef.checkReturn(req.body.notif, 'false') === 'true') {
                 pushNotif(
                   `${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`,
-                  `New Announcement: ${req.file.originalname}`,
+                  `New Announcement: ${doc.originalname}`,
                   `${req.body.year}/${req.body.branch}`
                 );
               }
 
-              thumbCore.assignThumb(req.file).then((thumbObj) => {
+              thumbCore.assignThumb(doc).then((thumbObj) => {
                 debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
 
                 const feed = {
@@ -366,7 +366,7 @@ router.post('/bulkUpload', (req, res) => {
                     Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                     Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   },
-                  isNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                  IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                   DownloadURL: doc.location,
                   ThumbnailURL: thumbObj.thumbnail,
                   Counts: {
@@ -436,31 +436,24 @@ router.get('/listUploads', (req, res) => {
     if (req.query.year) {
       feed['Filters.Year'] = req.query.year.sanitise().toNum();
     }
-
     if (req.query.branch) {
       feed['Filters.Branch'] = req.query.branch.sanitise().stringFix();
     }
-
     if (req.query.subject) {
       feed['Filters.Subject'] = req.query.subject.sanitise().stringFix();
     }
-
     if (req.query.type) {
       feed.FileType = req.query.type.sanitise().stringFix().replace('.', '');
     }
-
     if (req.query.notif) {
-      feed.isNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
+      feed.IsNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
     }
-
-    if (req.query.report) {
-      feed.isReported = (req.query.report.sanitise().stringFix() === 'true') ? 'true' : 'false';
+    if (!req.query.report) {
+      feed.isReported = false;
     }
-
-    if (req.query.available === 'false') {
-      feed.isAvailable = false;
+    if (!req.query.available) {
+      feed.isAvailable = true;
     }
-    else feed.isAvailable = true;
 
     logService.addLog('Uploads list sent', 'General User', auth.resolveToken(req.get('Authorization')), logger);
 
@@ -586,6 +579,7 @@ router.post('/updateLike', (req, res) => {
 router.post('/report', (req, res) => {
   if (auth.verifyToken(req.get('Authorization'))) {
     const info = req.app.get('db').collection(infoDB);
+    const timestamp = req.app.get('db').collection(timestampDB);
     const logger = req.app.get('db').collection(logDB);
 
     if (!mongodb.ObjectId.isValid(req.body.id)) {
@@ -605,7 +599,29 @@ router.post('/report', (req, res) => {
           else if (result.value != null) {
             debugLog.info('Reported Document');
             logService.addLog('Reported Document', 'General User', req.body.id, logger);
-            res.status(200).send('Reported');
+
+            const timec = Date.now();
+
+            const timefeed = {
+              Year: nundef.checkReturn(result.value.Year, '0').sanitise().toNum(),
+              Branch: nundef.checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
+              Subject: nundef.checkReturn(result.value.Subject, 'common').sanitise().stringFix()
+            };
+
+            timefeed.Notif = ((result.value.notif) === 'true');
+
+            timestamp.updateOne(timefeed,
+              { $set: { updatedOn: timec } },
+              { upsert: true }, (timeErr) => {
+                if (timeErr) {
+                  debugLog.error('Can\'t update timestamp', timeErr);
+                  res.status(500).send(timeErr);
+                }
+                else {
+                  debugLog.info('Timestamp updated');
+                  res.status(200).send('OK');
+                }
+              });
           }
           else {
             debugLog.info('Document not found', result);
@@ -661,7 +677,7 @@ router.get('/download', (req, res) => {
                 Branch: nundef.checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
                 Subject: nundef.checkReturn(result.value.Subject, 'common').sanitise().stringFix()
               };
-              timefeed.Notif = ((result.value.isNotif) === 'true');
+              timefeed.Notif = ((result.value.IsNotif) === 'true');
 
               timestamp.updateOne(timefeed,
                 { $set: { Timestamp: timec } },

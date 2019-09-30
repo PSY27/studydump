@@ -4,9 +4,11 @@ block content
 
 	h3.
 		Document View
+	form(method='POST' action='flush/')
+		button(type = 'submit' name='url') Flush All!!!
 	ul
 		each info, i in view
 			li#info_item
 				p #{info.FileName} |||| #{info.FileType} |||| #{info.Size} |||| #{info.Filters.Year} |||| #{info.Filters.Branch} |||| #{info.Filters.Subject}
 				form(method='POST' action='delete/'+info._id)
-					button(type = 'submit' name='url' value=info.DownloadURL) Delete
+					button(type = 'submit' name='url') Delete
