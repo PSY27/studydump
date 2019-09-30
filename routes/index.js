@@ -223,7 +223,13 @@ router.post('/uploadFile', (req, res) => {
           else {
             debugLog.info('File uploaded successfully');
 
-            if (nundef.checkReturn(req.body.notif, 'false') === 'true') pushNotif(`${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`, 'A new circular has been uploaded for your branch', 'Tap to view');
+            if (nundef.checkReturn(req.body.notif, 'false') === 'true') {
+              pushNotif(
+                `${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`,
+                `New Announcement: ${req.file.originalname}`,
+                `${req.body.year}/${req.body.branch}`
+              );
+            }
 
             thumbCore.assignThumb(req.file).then((thumbObj) => {
               debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
@@ -237,7 +243,7 @@ router.post('/uploadFile', (req, res) => {
                   Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                   Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                 },
-                IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                isNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                 DownloadURL: req.file.location,
                 ThumbnailURL: thumbObj.thumbnail,
                 Counts: {
@@ -246,6 +252,7 @@ router.post('/uploadFile', (req, res) => {
                   LikeCount: 0
                 },
                 isAvailable: true,
+                isReported: false,
                 uploadTime: Date.now()
               };
 
@@ -339,7 +346,13 @@ router.post('/bulkUpload', (req, res) => {
             else {
               debugLog.success('File uploaded successfully');
 
-              if (nundef.checkReturn(req.body.notif, 'false') === 'true') pushNotif(`${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`, 'A new circular has been uploaded for your branch', 'Tap to view');
+              if (nundef.checkReturn(req.body.notif, 'false') === 'true') {
+                pushNotif(
+                  `${nundef.checkReturn(req.body.year, '0').sanitise().toNum()}_${nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix()}`,
+                  `New Announcement: ${req.file.originalname}`,
+                  `${req.body.year}/${req.body.branch}`
+                );
+              }
 
               thumbCore.assignThumb(req.file).then((thumbObj) => {
                 debugLog.info('Thumbnail generated at', thumbObj.thumbnail);
@@ -353,7 +366,7 @@ router.post('/bulkUpload', (req, res) => {
                     Branch: nundef.checkReturn(req.body.branch, 'common').sanitise().stringFix(),
                     Subject: nundef.checkReturn(req.body.subject, 'common').sanitise().stringFix()
                   },
-                  IsNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
+                  isNotif: nundef.checkReturn(req.body.notif, 'false').sanitise().stringFix(),
                   DownloadURL: doc.location,
                   ThumbnailURL: thumbObj.thumbnail,
                   Counts: {
@@ -362,6 +375,7 @@ router.post('/bulkUpload', (req, res) => {
                     LikeCount: 0
                   },
                   isAvailable: true,
+                  isReported: false,
                   uploadTime: Date.now()
                 };
 
@@ -422,23 +436,31 @@ router.get('/listUploads', (req, res) => {
     if (req.query.year) {
       feed['Filters.Year'] = req.query.year.sanitise().toNum();
     }
+
     if (req.query.branch) {
       feed['Filters.Branch'] = req.query.branch.sanitise().stringFix();
     }
+
     if (req.query.subject) {
       feed['Filters.Subject'] = req.query.subject.sanitise().stringFix();
     }
+
     if (req.query.type) {
       feed.FileType = req.query.type.sanitise().stringFix().replace('.', '');
     }
+
     if (req.query.notif) {
-      feed.IsNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
-    }
-    if (!req.query.available) {
-      feed.isAvailable = true;
+      feed.isNotif = (req.query.notif.sanitise().stringFix() === 'true') ? 'true' : 'false';
     }
 
-    debugLog.debug(feed);
+    if (req.query.report) {
+      feed.isReported = (req.query.report.sanitise().stringFix() === 'true') ? 'true' : 'false';
+    }
+
+    if (req.query.available === 'false') {
+      feed.isAvailable = false;
+    }
+    else feed.isAvailable = true;
 
     logService.addLog('Uploads list sent', 'General User', auth.resolveToken(req.get('Authorization')), logger);
 
@@ -560,6 +582,45 @@ router.post('/updateLike', (req, res) => {
   }
 });
 
+// Report Document
+router.post('/report', (req, res) => {
+  if (auth.verifyToken(req.get('Authorization'))) {
+    const info = req.app.get('db').collection(infoDB);
+    const logger = req.app.get('db').collection(logDB);
+
+    if (!mongodb.ObjectId.isValid(req.body.id)) {
+      debugLog.error('Invalid ObjectId supplied', req.body.id);
+      res.status(500).send('Invalid ObjectId');
+    }
+    else {
+      info.findOneAndUpdate(
+        { _id: new mongodb.ObjectID(req.body.id) },
+        { $set: { isReported: true } },
+        (err, result) => {
+          if (err) {
+            debugLog.error('Couldn\'t report document', err);
+            debugLog.info('Manually review the document:', result.value);
+            res.status(500).send(err);
+          }
+          else if (result.value != null) {
+            debugLog.info('Reported Document');
+            logService.addLog('Reported Document', 'General User', req.body.id, logger);
+            res.status(200).send('Reported');
+          }
+          else {
+            debugLog.info('Document not found', result);
+            res.status(200).send('Document moved...');
+          }
+        }
+      );
+    }
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).send('Couldn\'t authenticate connection');
+  }
+});
+
 // Download File
 router.get('/download', (req, res) => {
   const info = req.app.get('db').collection(infoDB);
@@ -600,7 +661,7 @@ router.get('/download', (req, res) => {
                 Branch: nundef.checkReturn(result.value.Branch, 'common').sanitise().stringFix(),
                 Subject: nundef.checkReturn(result.value.Subject, 'common').sanitise().stringFix()
               };
-              timefeed.Notif = ((result.value.IsNotif) === 'true');
+              timefeed.Notif = ((result.value.isNotif) === 'true');
 
               timestamp.updateOne(timefeed,
                 { $set: { Timestamp: timec } },

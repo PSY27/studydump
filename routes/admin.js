@@ -91,6 +91,66 @@ router.get('/view', (req, res) => {
   }
 });
 
+// Report Audit View
+router.get('/audit', (req, res) => {
+  if (auth.checkHighAuth()) {
+    const info = req.app.get('db').collection(infoDB);
+
+    info.find({ isReported: true }).sort({ 'Counts.DownloadCount': -1, 'Counts.CallCount': -1, _id: 1 }).toArray((err, result) => {
+      if (err) {
+        debugLog.error('Can\'t run query', err);
+        res.status(500).send(err);
+      }
+      else if (result.length) {
+        res.render('audit', {
+          view: result
+        });
+      }
+      else {
+        debugLog.info('No documents found');
+        res.status(200).send('No documents found');
+      }
+    });
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).send('Couldn\'t authenticate connection');
+  }
+});
+
+// Document Report Freeing Route
+router.post('/free/:id', (req, res) => {
+  const info = req.app.get('db').collection(infoDB);
+  const logger = req.app.get('db').collection(logDB);
+
+  if (auth.checkHighAuth()) {
+    info.findOneAndUpdate(
+      { _id: new mongodb.ObjectId(req.params.id) },
+      { $set: { isReported: false } },
+      (err) => {
+        if (err) {
+          debugLog.error('Can\'t run query', err);
+          res.status(500).send(err);
+        }
+        else {
+          debugLog.info('Freed document from report');
+
+          logService.addLog('Token verified', 'Admin', req.get('Authorization'), logger);
+
+          res.redirect(`${req.baseUrl}/audit`);
+        }
+      }
+    );
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).send('Couldn\'t authenticate connection');
+  }
+});
+
+
+
+
 // Document Delete Route
 router.post('/delete/:id', (req, res) => {
   const info = req.app.get('db').collection(infoDB);

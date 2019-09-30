@@ -14,6 +14,16 @@ const cookieParser = require('cookie-parser');
 (process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') ? require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' }) : {}; // eslint-disable-line no-unused-expressions
 
 
+/* Module Pre-Init */
+
+// Initializing App
+const app = express();
+
+// Setup dotenv
+// eslint-disable-next-line no-unused-expressions
+(!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') ? require('dotenv').config() : '';
+
+
 /* Import Services */
 const mongoService = require('services/MongoService');
 
@@ -28,11 +38,8 @@ const adminRouter = require('routes/admin');
 const usersRouter = require('routes/users');
 
 
-/* Module Pre-Init */
+/* Mongo Setup */
 const MongoURL = process.env.MONGO_URL;
-
-// Initializing App
-const app = express();
 
 
 /* CORS Setup */

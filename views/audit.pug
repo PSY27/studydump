@@ -3,10 +3,12 @@ extends layout
 block content
 
 	h3.
-		Document View
+		Reported Documents View
 	ul
 		each info, i in view
 			li#info_item
 				p #{info.FileName} |||| #{info.FileType} |||| #{info.Size} |||| #{info.Filters.Year} |||| #{info.Filters.Branch} |||| #{info.Filters.Subject}
 				form(method='POST' action='delete/'+info._id)
-					button(type = 'submit' name='url' value=info.DownloadURL) Delete
+					button(type = 'submit' name='deletion' value=info.DownloadURL) Delete
+				form(method='POST' action='free/'+info._id)
+					button(type = 'submit' name='freeing' value=info.DownloadURL) Free
