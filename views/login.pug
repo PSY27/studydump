@@ -1,16 +1,79 @@
-extends layout
+doctype html
+html
+	
+	head
+		include includes/_head.pug
+		title Login - studyDump Admin
 
-block content
-  .main.container
-    .row
-      .col-md-6.col-md-offset-3
-        p #{message}
-        h1.display-4.m-b-2 Log In
-        form(method='POST' action='login')
-          div.form-group
-            label(for='userid') UserId
-            input.form-control(type='text' id='userid' placeholder='userid' name='userid')
-          div.form-group
-            label(for='password') Password
-            input.form-control(type='password' id='password' placeholder='password' name='password')
-          button.btn.btn-primary(type='submit') Log in
+	body
+		section.material-half-bg
+			.cover
+
+		section.login-content
+			.logo: h1 studyDump Admin Console
+
+			.login-box
+				form.login-form#login(method='POST' action='/admin/login')
+					h3.login-head
+						i.fa.fa-lg.fa-fw.fa-user
+						| LOG IN
+					.form-group
+						label.control-label USERID
+						input.form-control(type="text" placeholder="User ID" name='userid' autofocus)
+
+					.form-group
+						label.control-label PASSWORD
+						input.form-control(type="password" placeholder="Password" name='password')
+
+					.form-group
+						.utility
+							.animated-checkbox
+								label
+									input(type="checkbox" name='staySigned')
+									span.label-text Stay Signed in
+							p.semibold-text.mb-2
+								a(href="#" data-toggle="flip") Forgot Password ?
+
+					.form-group.btn-container
+						button.btn.btn-primary.btn-block
+							i.fa.fa-sign-in.fa-lg.fa-fw
+							| LOG IN
+
+				form.forget-form(method='POST' action="forgotPassword")
+					h3.login-head
+						i.fa.fa-lg.fa-fw.fa-lock
+						| Forgot Password ?
+					.form-group
+						label.control-label EMAIL
+						input.form-control(type="text" placeholder="Email")
+
+					.form-group.btn-container
+						button.btn.btn-primary.btn-block
+							i.fa.fa-unlock.fa-lg.fa-fw
+							| RESET
+
+					.form-group.mt-3
+						p.semibold-text.mb-0
+							a(href="#" data-toggle="flip") <i class="fa fa-angle-left fa-fw"></i> Back to Login
+
+		include includes/_javascript.pug
+
+		script(src="/js/plugins/bootstrap-notify.min.js")
+		script(src="/js/plugins/sweetalert.min.js")
+		script(type="text/javascript").
+			$('.login-content [data-toggle="flip"]').click(function() {
+				$('.login-box').toggleClass('flipped');
+				return false;
+			});
+			
+			$(document).ready(function(){
+				if ("#{message}") {
+					swal({
+						title: "Error in Logging In",
+						text: "#{message}",
+						type: "error",
+						confirmButtonText: "OK",
+						closeOnConfirm: true
+					});
+				}
+			});

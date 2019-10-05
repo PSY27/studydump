@@ -1,13 +1,156 @@
-extends layout
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'dashboard'
+	- var activeGroup = 'none'
 
 block content
+	.app-title
+		div
+			h1
+				i.fa.fa-dashboard
+				|	Dashboard
+			p studyDump Management Tool
 
-  h1 Admin Console
-  p Welcome to StudyDump admin console
-  button.btn.btn-primary(type='submit', onclick='move();') Log in
+		ul.app-breadcrumb.breadcrumb
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item
+				a(href='/admin') Dashboard
 
-block script
-  script.
-    function move() {
-      window.location.href = 'login';
-    }
+	.row
+		.col-md-6.col-lg-3
+			a.click-card(href="/admin/view")
+				.widget-small.primary.coloured-icon
+					i.icon.fa.fa-files-o.fa-3x
+					div.info
+						h4 Files
+						p
+							b 10
+
+		.col-md-6.col-lg-3
+			a.click-card(href="/admin/view")
+				.widget-small.info.coloured-icon
+					i.icon.fa.fa-thumbs-o-up.fa-3x
+					div.info
+						h4 Likes
+						p
+							b 2
+
+		.col-md-6.col-lg-3
+			a.click-card(href="/admin/view")
+				.widget-small.warning.coloured-icon
+					i.icon.fa.fa-download.fa-3x
+					div.info
+						h4 Downloads
+						p
+							b 10
+
+		.col-md-6.col-lg-3
+			a.click-card(href="/admin/audit")
+				.widget-small.danger.coloured-icon
+					i.icon.fa.fa-exclamation.fa-3x
+					div.info
+						h4 Reports
+						p
+							b 0
+
+	.row
+
+		.col-md-6
+			.tile
+				h3.tile-title Manifesto
+				p Display what studydump represents and how it was conceived.
+
+				p Where does one go from here
+
+				p How to extend its life
+
+		.col-md-6
+			.tile
+				h3.tile-title Releases
+				
+				p.mt-4.mb-4
+					a.btn.btn-primary.mr-2.mb-2(href="https://gitlab.com/mit.regex/studydump-api", target="_blank")
+						i.fa.fa-gitlab
+						| Source
+					a.btn.btn-info.mr-2.mb-2(href="#", target="_blank")
+						i.fa.fa-google
+						| Play Store
+					a.btn.btn-success.mr-2.mb-2(href="#", target="_blank")
+						i.fa.fa-apple
+						| iOS
+
+		.col-md-6
+			.tile
+				div
+					h2#to-do Tasklist
+					ul
+						li
+							p notifications
+						li
+							p Show message instead of empty table
+						li
+							p Add manifest, keeplist and releases
+						li
+							p Fix mimetype nosniff (temporary solution -&gt; remove rel from attribute)
+						li
+							p Add mail functionality
+						li
+							p Dynamic card info View
+						li
+							p Add parameter existence checks
+						li
+							p Add basic login based session for admin
+							ul
+								li Add checkHighAuth
+						li
+							p Create evaluation tests
+						li
+							p Shift detect duplicate core to its location
+						li
+							p Spam filter
+						li
+							p Explicit Filter
+						li
+							p Thumbnailing
+
+					br
+					h2#for-server-deployment For Server Deployment
+					ul
+						li
+							p favicon
+						li
+							p robots
+						li
+							p .htaccess
+						li
+							p Server autoDB script
+						li
+							p Server-side isAvailable routine check
+						li
+							p Convert debug route to server side script
+						li
+							p Server-side purge scripts for action-logging
+						li
+							p Make server side scripts for management
+						li
+							p Store public n private keys in venv vars (ssh-keygen)
+						li
+							p Blacklist IPs trying multiple times to create jwt
+						li
+							p Security and stress check
+						li
+							p Server support for GraphicsMagick (images)
+						li
+							p Server support for ghostscript (pdfs)
+						li
+							p Server support for ffmpeg (videos)
+						li
+							p Server support for unoconv/libreoffice (pdf)
+						li
+							p Duplicate check
+						li
+							p Check spam
+						li
+							p Create thumbnails

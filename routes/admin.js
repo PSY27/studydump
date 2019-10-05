@@ -52,18 +52,24 @@ router.get('/verifyToken', (req, res) => {
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
   }
 });
 
 // Login View
 router.get('/login', (req, res) => {
-  res.render('login');
+  res.render('login', null);
 });
 
 // Landing View
 router.get('/', (req, res) => {
-  res.render('index');
+  if (auth.checkHighAuth(req)) {
+    res.render('index', null);
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).redirect('/admin/login');
+  }
 });
 
 // Document List View
@@ -76,20 +82,16 @@ router.get('/view', (req, res) => {
         debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
-      else if (result.length) {
+      else {
         res.render('view', {
           view: result
         });
-      }
-      else {
-        debugLog.info('No documents found');
-        res.status(200).send('No documents found');
       }
     });
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
   }
 });
 
@@ -103,20 +105,76 @@ router.get('/audit', (req, res) => {
         debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
-      else if (result.length) {
+      else {
         res.render('audit', {
           view: result
         });
-      }
-      else {
-        debugLog.info('No documents found');
-        res.status(200).send('No documents found');
       }
     });
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
+  }
+});
+
+// Forgot Password
+router.post('/forgotPassword', (req, res) => {
+  const logger = req.app.get('db').collection(logDB);
+
+  if (req.body.email !== undefined) {
+    const expectUser = adminCreds.filter(cred => cred.EMail === req.body.email);
+
+    if (expectUser[0] !== undefined) {
+      res.render('login', {
+        message: 'Password sent to specified Email'
+      });
+      logService.addLog('Admin password dispatched', 'Admin', req.body.email, logger);
+    }
+    else {
+      res.render('login', {
+        message: 'Invalid Email'
+      });
+    }
+  }
+  else {
+    res.render('login', {
+      message: 'Required fields left unfilled'
+    });
+  }
+});
+
+// Logout Admin
+router.post('/logout', (req, res) => {
+  const logger = req.app.get('db').collection(logDB);
+
+  if (req.signedCookies.authCert !== undefined) {
+    logService.addLog('Admin logged out', 'Admin', JSON.parse(req.signedCookies.authCert).userid, logger);
+    res.clearCookie('authCert').redirect('/admin/login');
+  }
+  else {
+    res.render('login', {
+      message: 'Session Invalid'
+    });
+  }
+});
+
+// Handle File Audit
+router.post('/audit/:id', (req, res) => {
+  if (auth.checkHighAuth(req)) {
+    debugLog.debug(req);
+    if (req.body.result === 'unflag') {
+      req.url = `/free/${req.params.id}`;
+      router.handle(req, res);
+    }
+    if (req.body.result === 'delete') {
+      req.url = `/delete/${req.params.id}`;
+      router.handle(req, res);
+    }
+  }
+  else {
+    debugLog.error('Authentication Failure');
+    res.status(401).redirect('/admin/login');
   }
 });
 
@@ -139,14 +197,14 @@ router.post('/free/:id', (req, res) => {
 
           logService.addLog('Document freed', 'Admin', req.params.id, logger);
 
-          res.redirect('audit');
+          res.status(200).redirect('/admin/audit');
         }
       }
     );
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
   }
 });
 
@@ -162,7 +220,7 @@ router.post('/delete/:id', (req, res) => {
         res.status(500).send(err);
       }
       else if (!doc.value) {
-        debugLog.error('Detected Multiclick', 'Ignoring multi-deletes');
+        debugLog.error('Detected multiclick', 'Ignoring multi-deletes');
       }
       else {
         debugLog.info('Removed document from database');
@@ -178,13 +236,13 @@ router.post('/delete/:id', (req, res) => {
             debugLog.success('Deleted file : ', doc.value.DownloadURL.replace(/^.+\//g, ''));
           }
         });
-        res.redirect(req.header('Referer') || 'view');
+        res.status(200).redirect(req.header('Referer') || '/admin/view');
       }
     });
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
   }
 });
 
@@ -213,14 +271,14 @@ router.post('/flush', (req, res) => {
             }
           });
         });
-        res.redirect(req.header('Referer') || 'view');
+        res.status(200).redirect(req.header('Referer') || '/admin/view');
       }
       return true;
     });
   }
   else {
     debugLog.error('Authentication Failure');
-    res.status(401).redirect('login');
+    res.status(401).redirect('/admin/login');
   }
 });
 
@@ -232,18 +290,23 @@ router.post('/login', (req, res) => {
     const expectUser = adminCreds.filter(cred => cred.UserId === req.body.userid);
 
     if (expectUser[0] !== undefined && expectUser[0].Password === req.body.password) {
-      res.cookie('authCert', 'value', Options.cookieOptions).redirect('view');
+      if (req.body.staySigned === 'on') Options.cookieOptions.maxAge = 100 * 1571 * 1613 * 1000 * 1000;
+      res.cookie('authCert',
+        `{"userid":"${expectUser[0].UserId}","email":"${expectUser[0].EMail}"}`,
+        Options.cookieOptions);
+      res.cookie('activeUser', expectUser[0].UserId);
+      res.redirect('/admin');
       logService.addLog('Admin logged in', 'Admin', req.body.userid, logger);
     }
     else {
       res.render('login', {
-        message: 'Invalid Credentials'
+        message: 'Invalid credentials'
       });
     }
   }
   else {
     res.render('login', {
-      message: 'Required Fields Left Unfilled'
+      message: 'Required fields left unfilled'
     });
   }
 });

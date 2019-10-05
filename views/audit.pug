@@ -1,14 +1,62 @@
-extends layout
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'audit'
+	- var activeGroup = 'none'
+
+block title
+	title Audit View - studyDump Admin
 
 block content
+	.app-title
+		div
+			h1
+				i.fa.fa-th-list
+				|  Audit View
+			p Reported files are listed here
 
-	h3.
-		Reported Documents View
-	ul
-		each info, i in view
-			li#info_item
-				p #{info.FileName} |||| #{info.FileType} |||| #{info.Size} |||| #{info.Filters.Year} |||| #{info.Filters.Branch} |||| #{info.Filters.Subject}
-				form(method='POST' action='delete/'+info._id)
-					button(type = 'submit' name='deletion' value=info.DownloadURL) Delete
-				form(method='POST' action='free/'+info._id)
-					button(type = 'submit' name='freeing' value=info.DownloadURL) Free
+		ul.app-breadcrumb.breadcrumb.side
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item.active
+				a(href="/admin/audit") Audit Records
+
+	.row
+		.col-md-12
+			.tile
+				.tile-body(style="overflow:auto;")
+					table.table.table-hover.table-bordered#auditTable
+						thead
+							tr
+								th Name
+								th Type
+								th Size
+								th Year
+								th Branch
+								th Subject
+								th Likes
+								th Downloads
+								th Options
+						tbody
+							each info, i in view
+								tr
+									td #{info.FileName}
+									td #{info.FileType}
+									td #{info.Size}
+									td #{info.Filters.Year}
+									td #{info.Filters.Branch}
+									td #{info.Filters.Subject}
+									td #{info.Counts.LikeCount}
+									td #{info.Counts.DownloadCount}
+									td
+										.mb-3.bs-component
+											form(method='POST' action='/admin/audit/'+info._id)
+												.btn-group(role='group', aria-label='Delete or Unflag')
+													button.btn.btn-danger(type='submit' name='result' value='unflag') Unflag
+													button.btn.btn-danger(type='submit' name='result' value='delete') Delete
+
+block specific-js
+	script(src="/js/plugins/jquery.dataTables.min.js")
+	script(src="/js/plugins/dataTables.bootstrap.min.js")
+	script.
+		$('#viewTable').DataTable();

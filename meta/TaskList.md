@@ -2,6 +2,21 @@
 
 ## To-Do
 
+-   notifications
+
+-   Show message instead of empty table
+
+-   Add manifest, keeplist and releases
+
+-  Add autolinking to update manifest and tasklist
+
+-   Fix mimetype nosniff (temporary solution -> remove rel from attribute)
+
+-   Add mail functionality
+
+-   Dynamic card info View
+
+-   
 -   Add parameter existence checks
 
 -   Add basic login based session for admin

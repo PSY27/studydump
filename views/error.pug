@@ -1,6 +1,16 @@
-extends layout
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'error-page'
+	- var activeGroup = 'pages'
+
+block title
+	title Error - studyDump Admin
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+	.page-error.tile
+		h1
+			i.fa.fa-exclamation-circle
+			|  Error #{status}: Page not accessible
+		p #{stack}.
+		p: a.btn.btn-primary(href="javascript:window.history.back();") Go Back

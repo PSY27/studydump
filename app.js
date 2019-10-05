@@ -3,14 +3,14 @@ require('app-module-path').addPath(`${__dirname}`);
 
 
 /* Legacy Modules */
-const createError = require('http-errors');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
-
+const session = require('express-session');
+const compileSass = require('express-compile-sass');
 (process.env.NODE_ENV === undefined || process.env.NODE_ENV !== 'production') ? require('dotenv').config({ silent: process.env.NODE_ENV !== 'development' }) : {}; // eslint-disable-line no-unused-expressions
 
 
@@ -56,11 +56,21 @@ app.use(cors(process.env.NODE_ENV === 'development' ? '' : corsOptions));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+// Sass Middleware Setup
+app.use(compileSass({
+  root: path.join(__dirname, 'public/stylesheets'),
+  sourceMap: true,
+  sourceComments: true,
+  watchFiles: true,
+  logToConsole: false
+}));
+
 // Use legacy middlewares
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
 app.use(favicon(path.join(__dirname, 'public', 'images', 'icons', 'favicon.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -84,7 +94,11 @@ mongoService.init(MongoURL)
 
 /* 404 Handler */
 app.use((req, res, next) => {
-  next(createError(404));
+  res.render('error', {
+    status: 404,
+    stack: 'Not Found'
+  });
+  next();
 });
 
 

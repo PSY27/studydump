@@ -1,14 +1,91 @@
-extends layout
+extends layouts/_layout.pug
+
+block variables
+	- var activePage = 'view'
+	- var activeGroup = 'none'
+
+block title
+	title Records View - studyDump Admin
 
 block content
+	.app-title
+		div
+			h1
+				i.fa.fa-th-list
+				|  Records View
+			p Records of files uploaded to studyDump
 
-	h3.
-		Document View
-	form(method='POST' action='flush/')
-		button(type = 'submit' name='url') Flush All!!!
-	ul
-		each info, i in view
-			li#info_item
-				p #{info.FileName} |||| #{info.FileType} |||| #{info.Size} |||| #{info.Filters.Year} |||| #{info.Filters.Branch} |||| #{info.Filters.Subject}
-				form(method='POST' action='delete/'+info._id)
-					button(type = 'submit' name='url') Delete
+		ul.app-breadcrumb.breadcrumb.side
+			li.breadcrumb-item
+				i.fa.fa-home.fa-lg
+			li.breadcrumb-item.active
+				a(href="/admin/view") View Records
+
+	.row
+		.col-md-12
+			.tile
+				.tile-body(style="overflow:auto;")
+					table.table.table-hover.table-bordered#viewTable
+						thead
+							tr
+								th Name
+								th Type
+								th Size
+								th Year
+								th Branch
+								th Subject
+								th Likes
+								th Downloads
+								th Delete
+						tbody
+							each info, i in view
+								tr
+									td #{info.FileName}
+									td #{info.FileType}
+									td #{info.Size}
+									td #{info.Filters.Year}
+									td #{info.Filters.Branch}
+									td #{info.Filters.Subject}
+									td #{info.Counts.LikeCount}
+									td #{info.Counts.DownloadCount}
+									td
+										form(method='POST' action='/admin/delete/'+info._id)
+											button.btn.btn-danger(type='submit' name='url') Delete
+
+	a.btn.btn-danger#flushNotif(href="#") Flush All!!!
+
+block specific-js
+	script(src="/js/plugins/jquery.dataTables.min.js")
+	script(src="/js/plugins/dataTables.bootstrap.min.js")
+	script(src="/js/plugins/bootstrap-notify.min.js")
+	script(src="/js/plugins/sweetalert.min.js")
+	script.
+		$('#viewTable').DataTable();
+
+		$('#flushNotif').click(function(){
+			const randStr = Math.random().toString(36).slice(-5)+Math.random().toString(36).slice(-5)+Math.random().toString(36).slice(-5)+Math.random().toString(36).slice(-5);
+			swal({
+				title: "Are you sure?",
+				text: "This will purge all files in studyDump's inventory!",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonText: "Yes, flush everything!",
+				cancelButtonText: "No, go back!",
+				closeOnConfirm: false,
+				closeOnCancel: false
+			}, function(isConfirm) {
+				if (isConfirm) {
+					const input = prompt("To continue type in: " + randStr);
+					if(input === randStr) {
+						$.post('/admin/flush', null);
+						swal("Deleted!", "studyDump has been flushed!", "success");
+					}
+					else {
+						swal("Cancelled", "Passcode entered didn't match the prompted one. Database will stay as is...", "error");
+					}
+				}
+				else {
+					swal("Cancelled", "The database is safe!", "error");
+				}
+			});
+		});
