@@ -25,35 +25,38 @@ block content
 		.col-md-12
 			.tile
 				.tile-body(style="overflow:auto;")
-					table.table.table-hover.table-bordered#auditTable
-						thead
-							tr
-								th Name
-								th Type
-								th Size
-								th Year
-								th Branch
-								th Subject
-								th Likes
-								th Downloads
-								th Options
-						tbody
-							each info, i in view
+					if view
+						table.table.table-hover.table-bordered#auditTable
+							thead
 								tr
-									td #{info.FileName}
-									td #{info.FileType}
-									td #{info.Size}
-									td #{info.Filters.Year}
-									td #{info.Filters.Branch}
-									td #{info.Filters.Subject}
-									td #{info.Counts.LikeCount}
-									td #{info.Counts.DownloadCount}
-									td
-										.mb-3.bs-component
-											form(method='POST' action='/admin/audit/'+info._id)
-												.btn-group(role='group', aria-label='Delete or Unflag')
-													button.btn.btn-danger(type='submit' name='result' value='unflag') Unflag
-													button.btn.btn-danger(type='submit' name='result' value='delete') Delete
+									th Name
+									th Type
+									th Size
+									th Year
+									th Branch
+									th Subject
+									th Likes
+									th Downloads
+									th Options
+							tbody
+								each info, i in view
+									tr
+										td #{info.FileName}
+										td #{info.FileType}
+										td #{info.Size}
+										td #{info.Filters.Year}
+										td #{info.Filters.Branch}
+										td #{info.Filters.Subject}
+										td #{info.Counts.LikeCount}
+										td #{info.Counts.DownloadCount}
+										td
+											.mb-3.bs-component
+												form(method='POST' action='/admin/audit/'+info._id)
+													.btn-group(role='group', aria-label='Delete or Unflag')
+														button.btn.btn-danger(type='submit' name='result' value='unflag') Unflag
+														button.btn.btn-danger(type='submit' name='result' value='delete') Delete
+					else
+						p No documents to display...
 
 block specific-js
 	script(src="/js/plugins/jquery.dataTables.min.js")

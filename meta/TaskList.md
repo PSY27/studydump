@@ -2,28 +2,13 @@
 
 ## To-Do
 
--   notifications
-
--   Show message instead of empty table
-
--   Add manifest, keeplist and releases
-
--  Add autolinking to update manifest and tasklist
+-   Update manifest, keeplist and releases
 
 -   Fix mimetype nosniff (temporary solution -> remove rel from attribute)
 
--   Add mail functionality
+-   Send email on creating account
 
--   Dynamic card info View
-
--   
--   Add parameter existence checks
-
--   Add basic login based session for admin
-
-    -   Add checkHighAuth
-
--   Create evaluation tests
+-   Create module tests
 
 -   Shift detect duplicate core to its location
 

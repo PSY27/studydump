@@ -7,6 +7,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const path = require('path');
+const mailer = require('express-mailer');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
@@ -76,6 +77,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // CORS Pre-flight setup for all routes
 app.options('*', cors());
+
+// Mailer Initialization
+mailer.extend(app, {
+  from: 'mit.regex@gmail.com',
+  host: 'smtp.gmail.com',
+  secureConnection: true,
+  port: 465,
+  transportMethod: 'SMTP',
+  auth: {
+    user: JSON.parse(process.env.MAIL_AUTH).Email,
+    pass: JSON.parse(process.env.MAIL_AUTH).Password
+  }
+});
 
 // App Routing
 app.use('/', indexRouter);

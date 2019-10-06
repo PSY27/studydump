@@ -8,6 +8,7 @@ const mongodb = require('mongodb');
 const auth = require('services/Authorization');
 const logService = require('services/LogService');
 const mongoService = require('services/MongoService');
+const mailer = require('services/MailService');
 
 
 /* Import Utils */
@@ -82,6 +83,9 @@ router.get('/view', (req, res) => {
         debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
+      else if (!result.length) {
+        res.render('view', null);
+      }
       else {
         res.render('view', {
           view: result
@@ -105,6 +109,9 @@ router.get('/audit', (req, res) => {
         debugLog.error('Can\'t run query', err);
         res.status(500).send(err);
       }
+      else if (!result.length) {
+        res.render('audit', null);
+      }
       else {
         res.render('audit', {
           view: result
@@ -126,19 +133,33 @@ router.post('/forgotPassword', (req, res) => {
     const expectUser = adminCreds.filter(cred => cred.EMail === req.body.email);
 
     if (expectUser[0] !== undefined) {
-      res.render('login', {
-        message: 'Password sent to specified Email'
+      mailer.sendMail(res, expectUser[0], (err) => {
+        if (err) {
+          debugLog.error('Send Failure', err);
+          res.render('login', {
+            severity: 'error',
+            message: 'There was some error. Please try again later.'
+          });
+        }
+        else {
+          res.render('login', {
+            severity: 'success',
+            message: 'Password sent to specified Email'
+          });
+          logService.addLog('Admin password dispatched', 'Admin', req.body.email, logger);
+        }
       });
-      logService.addLog('Admin password dispatched', 'Admin', req.body.email, logger);
     }
     else {
       res.render('login', {
+        severity: 'error',
         message: 'Invalid Email'
       });
     }
   }
   else {
     res.render('login', {
+      severity: 'error',
       message: 'Required fields left unfilled'
     });
   }
@@ -154,6 +175,7 @@ router.post('/logout', (req, res) => {
   }
   else {
     res.render('login', {
+      severity: 'error',
       message: 'Session Invalid'
     });
   }
@@ -162,7 +184,6 @@ router.post('/logout', (req, res) => {
 // Handle File Audit
 router.post('/audit/:id', (req, res) => {
   if (auth.checkHighAuth(req)) {
-    debugLog.debug(req);
     if (req.body.result === 'unflag') {
       req.url = `/free/${req.params.id}`;
       router.handle(req, res);
@@ -300,12 +321,14 @@ router.post('/login', (req, res) => {
     }
     else {
       res.render('login', {
+        severity: 'error',
         message: 'Invalid credentials'
       });
     }
   }
   else {
     res.render('login', {
+      severity: 'error',
       message: 'Required fields left unfilled'
     });
   }

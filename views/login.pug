@@ -45,7 +45,7 @@ html
 						| Forgot Password ?
 					.form-group
 						label.control-label EMAIL
-						input.form-control(type="text" placeholder="Email")
+						input.form-control(type="text" placeholder="Email" name="email")
 
 					.form-group.btn-container
 						button.btn.btn-primary.btn-block
@@ -69,9 +69,9 @@ html
 			$(document).ready(function(){
 				if ("#{message}") {
 					swal({
-						title: "Error in Logging In",
+						title: ("#{severity}"=="success")?"Success":"Error in Logging In",
 						text: "#{message}",
-						type: "error",
+						type: "#{severity}",
 						confirmButtonText: "OK",
 						closeOnConfirm: true
 					});
