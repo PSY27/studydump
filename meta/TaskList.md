@@ -18,27 +18,11 @@
 
 -   Thumbnailing
 
+-   Log view
+
 Tasklist to remember during later stages of development
 
 ## For Server Deployment
-
--   favicon
-
--   robots
-
--   .htaccess
-
--   Server autoDB script
-
--   Server-side isAvailable routine check
-
--   Convert debug route to server side script
-
--   Server-side purge scripts for action-logging
-
--   Make server side scripts for management
-
--   Store public n private keys in venv vars (ssh-keygen)
 
 -   Blacklist IPs trying multiple times to create jwt
 
