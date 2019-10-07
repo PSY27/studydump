@@ -44,6 +44,7 @@ const verifyToken = (feedToken) => {
   try {
     jwt.verify(token, JWTPublicKEY, JWTSignOptions, (err, decoded) => {
       if (decoded) {
+        console.log(decoded);
         debugLog.success('Token authorized');
       }
       else {

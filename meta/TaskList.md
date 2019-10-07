@@ -18,6 +18,8 @@
 
 -   Thumbnailing
 
+-   bulkUpload Fixes
+
 Tasklist to remember during later stages of development
 
 ## For Server Deployment

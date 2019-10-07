@@ -1,7 +1,7 @@
 /* Functions */
 
 // Send Mail
-const sendMail = (app, user, cb) => {
+const sendResetMail = (app, user, cb) => {
   app.mailer.send('emails/resetpass', {
     to: user.EMail,
     subject: 'studyDump Admin Password Recovery',
@@ -12,7 +12,18 @@ const sendMail = (app, user, cb) => {
   });
 };
 
+const sendSignupMail = (app, email, cb) => {
+  app.mailer.send('emails/newsignup', {
+    to: email,
+    subject: 'Welcome to the studyDump Family',
+    targetUser: email
+  }, (err) => {
+    cb(err);
+  });
+};
+
 /* Module Exports */
 module.exports = {
-  sendMail
+  sendResetMail,
+  sendSignupMail
 };

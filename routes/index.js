@@ -86,6 +86,14 @@ router.post('/getToken', (req, res) => {
   logService.addLog('Token generated', 'General User', token, logger);
 });
 
+// Signup New User
+router.post('/newuser', (req, res) => {
+  const logger = req.app.get('db').collection(logDB);
+
+  mailer.sendSignupMail(res, req.body.email.sanitise(), (err) => {
+  });
+});
+
 // Search Document Route
 router.get('/search', (req, res) => {
   const info = req.app.get('db').collection(infoDB);

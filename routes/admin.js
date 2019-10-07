@@ -133,7 +133,7 @@ router.post('/forgotPassword', (req, res) => {
     const expectUser = adminCreds.filter(cred => cred.EMail === req.body.email);
 
     if (expectUser[0] !== undefined) {
-      mailer.sendMail(res, expectUser[0], (err) => {
+      mailer.sendResetMail(res, expectUser[0], (err) => {
         if (err) {
           debugLog.error('Send Failure', err);
           res.render('login', {
