@@ -62,6 +62,28 @@ router.get('/login', (req, res) => {
   res.render('login', null);
 });
 
+// Login Controller
+router.post('/login', (req, res) => {
+  if (req.body.userid !== undefined && req.body.password !== undefined) {
+    const expectUser = adminCreds.filter(cred => cred.UserId === req.body.userid);
+
+    if (expectUser[0] !== undefined && expectUser[0].Password === req.body.password) {
+      res.cookie('authCert', 'value', Options.cookieOptions).redirect('view');
+      logService.addLog('Admin logged in', 'Admin', req.body.userid, logger);
+    }
+    else {
+      res.render('login', {
+        message: 'Invalid Credentials'
+      });
+    }
+  }
+  else {
+    res.render('login', {
+      message: 'Required Fields Left Unfilled'
+    });
+  }
+});
+
 // Landing View
 router.get('/', (req, res) => {
   if (auth.checkHighAuth(req)) {
@@ -300,37 +322,6 @@ router.post('/flush', (req, res) => {
   else {
     debugLog.error('Authentication Failure');
     res.status(401).redirect('/admin/login');
-  }
-});
-
-// Login Controller
-router.post('/login', (req, res) => {
-  const logger = req.app.get('db').collection(logDB);
-
-  if (req.body.userid !== undefined && req.body.password !== undefined) {
-    const expectUser = adminCreds.filter(cred => cred.UserId === req.body.userid);
-
-    if (expectUser[0] !== undefined && expectUser[0].Password === req.body.password) {
-      if (req.body.staySigned === 'on') Options.cookieOptions.maxAge = 100 * 1571 * 1613 * 1000 * 1000;
-      res.cookie('authCert',
-        `{"userid":"${expectUser[0].UserId}","email":"${expectUser[0].EMail}"}`,
-        Options.cookieOptions);
-      res.cookie('activeUser', expectUser[0].UserId);
-      res.redirect('/admin');
-      logService.addLog('Admin logged in', 'Admin', req.body.userid, logger);
-    }
-    else {
-      res.render('login', {
-        severity: 'error',
-        message: 'Invalid credentials'
-      });
-    }
-  }
-  else {
-    res.render('login', {
-      severity: 'error',
-      message: 'Required fields left unfilled'
-    });
   }
 });
 

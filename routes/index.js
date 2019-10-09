@@ -76,14 +76,20 @@ const bulk = multer({
 router.post('/getToken', (req, res) => {
   const logger = req.app.get('db').collection(logDB);
 
-  const payload = {
-    name: req.body.name.sanitise(),
-    email: req.body.email.sanitise()
-  };
+  if (req.body.name && req.body.email) {
+    const payload = {
+      name: req.body.name.sanitise(),
+      email: req.body.email.sanitise()
+    };
 
-  const token = auth.createToken(payload);
-  res.status(200).send(token);
-  logService.addLog('Token generated', 'General User', token, logger);
+    const token = auth.createToken(payload);
+    res.status(200).send(token);
+    logService.addLog('Token generated', 'General User', token, logger);
+  }
+  else {
+    res.status(500).send('Parameters not filled');
+    logService.addLog('Empty token parameters', 'General User', token, logger);
+  }
 });
 
 // Search Document Route
